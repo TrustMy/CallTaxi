@@ -18,7 +18,7 @@
 
 
         <TextView
-            app:layout_marginLeftPercent = "6%"
+
             android:textColor="@color/colorAccent"
             android:drawableLeft="@mipmap/ic_launcher"
             android:gravity="center"
@@ -54,7 +54,7 @@
 
 
         <TextView
-            app:layout_marginLeftPercent = "6%"
+
             android:textColor="@color/colorAccent"
             android:drawableLeft="@mipmap/ic_launcher"
             android:gravity="center"
@@ -69,16 +69,19 @@
             android:textColor="@color/colorAccent"
             android:id="@+id/login_pwd"
             android:gravity="center_vertical"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_heightPercent = "100%"
-            app:layout_widthPercent="70%"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
             android:background="@null"
             />
     </LinearLayout>
 
 
-
+   <Button
+       android:id="@+id/login_submit"
+       android:text= "登录"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content" />
 
 
 

@@ -18,4 +18,9 @@ public class Config {
     public final static int ERROR = 1;
 
 
+
+
+    //-----------------------基本配置参数-------------------------------
+
+    public static int ClickTheInterval = 2;//点击间隔 防止连续点击
 }

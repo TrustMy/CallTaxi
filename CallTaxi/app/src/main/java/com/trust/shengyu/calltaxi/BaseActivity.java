@@ -4,17 +4,22 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 
+import com.jakewharton.rxbinding2.view.RxView;
 
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 
 
+import io.reactivex.functions.Consumer;
 
 import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
 
@@ -22,9 +27,9 @@ import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
  * Created by Trust on 2017/5/10.
  */
 public class BaseActivity extends AppCompatActivity {
-    protected MainActivity mainActivity ;
+//    protected MainActivity mainActivity ;
     private Context context = BaseActivity.this;
-
+    private Toast toast;
 
 
     @Override
@@ -71,17 +76,17 @@ public class BaseActivity extends AppCompatActivity {
 
     }
 
-    public void  onClick(final View v){
-//        RxView.clicks(v).throttleFirst(2, TimeUnit.SECONDS).
-//                subscribe(new Consumer<Object>() {
-//                    @Override
-//                    public void accept(@NonNull Object o) throws Exception {
-//                        clickResult(v);
-//                    }
-//                });
+    protected void  baseSetOnClick(final View v){
+        RxView.clicks(v).throttleFirst(Config.ClickTheInterval, TimeUnit.SECONDS).
+                subscribe(new Consumer<Object>() {
+                    @Override
+                    public void accept(@NonNull Object o) throws Exception {
+                        baseClickResult(v);
+                    }
+                });
     }
 
-    public void clickResult(View v){
+    public void baseClickResult(View v){
 
     }
 
@@ -98,13 +103,6 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     public void dissDialog(){
-
-    }
-
-    public void showWaitToast(Context context,String msg,int time){
-
-    }
-    public void showErrorToast(Context context,String msg,int time){
 
     }
 
@@ -129,12 +127,12 @@ public class BaseActivity extends AppCompatActivity {
      * @param errorMsg
      * @return
      */
-    protected  String checkMessage(EditText editText,String errorMsg){
+    protected  String baseCheckIsNull(EditText editText,String errorMsg){
         String msg = editText.getText().toString().trim();
         if(!msg.equals("")){
             return msg;
         }else{
-            showErrorToast(context,errorMsg,1);
+            showToast(errorMsg);
             return null;
         }
     }
@@ -150,6 +148,31 @@ public class BaseActivity extends AppCompatActivity {
     public void killAllActivtiy(Context context){
         context.startActivity(new Intent(context, LoginActivity.class));
 
+    }
+
+    protected void showToast(String msg){
+        if (toast == null) {
+            toast = Toast.makeText(context,
+                    msg,
+                    Toast.LENGTH_SHORT);
+        } else {
+            toast.setText(msg);
+        }
+        toast.show();
+    }
+    Snackbar snackbar;
+    protected void showSnackbar(View v,String description,String msg){
+        if (snackbar == null) {
+            snackbar =  Snackbar.make(v, description,Snackbar.LENGTH_LONG)
+                    .setAction("Undo", new View.OnClickListener(){
+                        @Override
+                        public void onClick(View v) {
+                        }
+                    });
+        }else{
+            snackbar.setText(msg);
+        }
+        snackbar.show();
     }
 
 
