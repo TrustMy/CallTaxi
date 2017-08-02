@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.trust.shengyu.calltaxi.LoginActivity">
+    tools:context="com.trust.shengyu.calltaxi.activitys.LoginActivity">
 
 
     <LinearLayout
@@ -71,9 +71,9 @@
             android:gravity="center_vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
             android:background="@null"
             />
+
     </LinearLayout>
 
 

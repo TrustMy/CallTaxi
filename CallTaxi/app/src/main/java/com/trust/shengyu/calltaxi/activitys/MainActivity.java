@@ -1,7 +1,10 @@
-package com.trust.shengyu.calltaxi;
+package com.trust.shengyu.calltaxi.activitys;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import com.trust.shengyu.calltaxi.BaseActivity;
+import com.trust.shengyu.calltaxi.R;
 
 public class MainActivity extends BaseActivity {
 

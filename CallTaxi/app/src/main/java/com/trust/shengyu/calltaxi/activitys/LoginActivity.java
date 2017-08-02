@@ -1,12 +1,25 @@
-package com.trust.shengyu.calltaxi;
+package com.trust.shengyu.calltaxi.activitys;
 
+import android.bluetooth.le.ScanResult;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
+
+import com.trust.shengyu.calltaxi.BaseActivity;
+import com.trust.shengyu.calltaxi.R;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -27,7 +40,18 @@ public class LoginActivity extends BaseActivity {
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
         initView();
+        initDate();
+
     }
+
+    private void initDate() {
+        WifiManager wifiManager  = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        List<android.net.wifi.ScanResult> list =  wifiManager.getScanResults();
+        for (int i = 0; i < list.size(); i++) {
+            Log.d("lhh", "initDate:  wifi:BSSID"+list.get(i).BSSID+"|SSID:"+list.get(i).SSID);
+        }
+    }
+
 
     private void initView() {
         baseSetOnClick(loginSubmit);
@@ -39,10 +63,14 @@ public class LoginActivity extends BaseActivity {
         if (user != null) {
             String pwd = baseCheckIsNull(loginPwd,"密码错误!");
             if (pwd != null) {
-                showSnackbar(loginSubmit,"说明","正在登录");
-                startActivity(new Intent(context,MainActivity.class));
+//                showSnackbar(loginSubmit,"说明",null);
+                startActivity(new Intent(context,MainMapActivity.class));
             }
         }
     }
+
+
+
+
 
 }

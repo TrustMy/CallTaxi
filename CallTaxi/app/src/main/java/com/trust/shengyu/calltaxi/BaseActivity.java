@@ -13,6 +13,8 @@ import android.widget.Toast;
 
 
 import com.jakewharton.rxbinding2.view.RxView;
+import com.trust.shengyu.calltaxi.activitys.LoginActivity;
+import com.trust.shengyu.calltaxi.tools.gps.Positioning;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -20,8 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 
 import io.reactivex.functions.Consumer;
-
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
 
 /**
  * Created by Trust on 2017/5/10.
@@ -31,6 +31,7 @@ public class BaseActivity extends AppCompatActivity {
     private Context context = BaseActivity.this;
     private Toast toast;
 
+    protected Positioning positioning;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +48,7 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void init() {
-
+        positioning = new Positioning();
     }
 
 
