@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.trust.shengyu.calltaxidriver.activitys.registerandlogin.LoginActivity">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        >
+
+
+        <TextView
+
+            android:textColor="@color/colorAccent"
+            android:drawableLeft="@mipmap/ic_launcher"
+            android:gravity="center"
+            android:text="手机号:"
+            android:drawablePadding="6dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+
+            />
+
+        <EditText
+            android:inputType="number"
+            android:id="@+id/login_user"
+            android:textColor="@color/colorAccent"
+            android:gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            />
+
+    </LinearLayout>
+
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        >
+
+
+        <TextView
+
+            android:textColor="@color/colorAccent"
+            android:drawableLeft="@mipmap/ic_launcher"
+            android:gravity="center"
+            android:text="密码:"
+            android:drawablePadding="14dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+
+        <EditText
+            android:inputType="numberPassword"
+            android:textColor="@color/colorAccent"
+            android:id="@+id/login_pwd"
+            android:gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            />
+
+    </LinearLayout>
+
+
+   <Button
+       android:id="@+id/login_submit"
+       android:text= "登录"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content" />
+
+
+
+
+
+</LinearLayout>

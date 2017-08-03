@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.trust.shengyu.calltaxi.activitys.MainMapActivity">
+    tools:context="com.trust.shengyu.calltaxi.activitys.mainmap.MainMapActivity">
 
 
 
@@ -32,6 +32,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
         <Button
             android:text="order ends"
@@ -39,6 +43,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
+        </LinearLayout>
+
+        <Button
+            android:text="order_history"
+            android:id="@+id/map_order_history"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
     <include
         android:id="@+id/mainmap_map"
         layout="@layout/map_layout"

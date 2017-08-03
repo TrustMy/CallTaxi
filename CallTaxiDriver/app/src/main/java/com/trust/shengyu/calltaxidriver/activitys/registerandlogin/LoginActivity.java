@@ -1,23 +1,18 @@
-package com.trust.shengyu.calltaxi.activitys;
+package com.trust.shengyu.calltaxidriver.activitys.registerandlogin;
 
-import android.bluetooth.le.ScanResult;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
-import com.trust.shengyu.calltaxi.BaseActivity;
-import com.trust.shengyu.calltaxi.R;
+import com.trust.shengyu.calltaxidriver.activitys.mainmap.MainMapActivity;
+import com.trust.shengyu.calltaxidriver.base.BaseActivity;
+import com.trust.shengyu.calltaxidriver.R;
+import com.trust.shengyu.calltaxidriver.mqtt.network.CallTaxiCommHelper;
 
 import java.util.List;
 
@@ -41,7 +36,13 @@ public class LoginActivity extends BaseActivity {
         ButterKnife.bind(this);
         initView();
         initDate();
-
+        CallTaxiCommHelper callTaxiCommHelper =  new CallTaxiCommHelper(context);
+        callTaxiCommHelper.doClientConnection();
+//        callTaxiCommHelper.publish("trust",1,"发送msg");
+        /*
+        callTaxiCommHelper.unbundledTopics("trust");
+        callTaxiCommHelper.publish("trust",1,"解绑后msg");
+        */
     }
 
     private void initDate() {

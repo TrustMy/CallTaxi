@@ -16,6 +16,7 @@ import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.model.PolylineOptions;
+import com.trust.shengyu.calltaxi.R;
 
 
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ import java.util.List;
  */
 
 public class DrawLiner {
-    /*
+
     private List<BitmapDescriptor> texTuresList;
     private static final int START = 0;
     private static final int END = 1;
@@ -40,7 +41,7 @@ public class DrawLiner {
 
     private void  init(){
         texTuresList = new ArrayList<BitmapDescriptor>();
-        texTuresList.add(BitmapDescriptorFactory.fromResource(R.drawable.road_1));
+        texTuresList.add(BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher));
 
     }
 
@@ -53,8 +54,9 @@ public class DrawLiner {
                 setCustomTextureList(texTuresList));
 
         if(latLngs.size() != 0){
-            addResIcon(latLngs.get(0),"起点",R.drawable.fire_on,"",START);
-            addResIcon(latLngs.get(latLngs.size()-1),"终点",R.drawable.fire_off,"",END);
+//            addResIcon(latLngs.get(0),"起点", R.mipmap.ic_launcher,"",START);
+//            addResIcon(latLngs.get(latLngs.size()-1),"终点",R.mipmap.ic_launcher,"",END);   addResIcon(latLngs.get(0),"起点", R.mipmap.ic_launcher,"",START);
+//            addResIcon(latLngs.get(latLngs.size()-1),"终点",R.mipmap.ic_launcher,"",END);
             centerMaker(aMap, latLngs.get(0).latitude,latLngs.get(0).longitude);
 
         }
@@ -73,7 +75,7 @@ public class DrawLiner {
     View infoWindow = null;
     AMap Amap;
     public void addResIcon(LatLng latLng, String title, int Icon, String msg, int types) {
-
+        /*
         Amap.setOnMarkerClickListener(onMarkerClickListener);
         Amap.setInfoWindowAdapter(new AMap.InfoWindowAdapter() {
             @Override
@@ -102,6 +104,8 @@ public class DrawLiner {
                 snippet(msg).icon(BitmapDescriptorFactory.
                 fromBitmap(BitmapFactory.decodeResource(context.getResources(), Icon))));
         marker.setObject(types);
+
+        */
     }
 
 
@@ -130,10 +134,10 @@ public class DrawLiner {
         aMap.clear();
         aMap.addPolyline(new PolylineOptions().addAll(latLngs).width(30).color(Color.parseColor("#020176")).
                 setCustomTextureList(texTuresList));
-//        Maker.showMaker(aMap,latLngs.get(latLngs.size()-1).latitude,latLngs.get(latLngs.size()-1).longitude);
-        Maker.showMakerGif(aMap,carLoationMessage = new CarLoationMessage(latLngs.get(latLngs.size()-1).latitude,latLngs.get(latLngs.size()-1).longitude
-        ,time,"asd",0),false,4000);
+        Maker.showMaker(aMap,latLngs.get(latLngs.size()-1));
+//        Maker.showMakerGif(aMap,carLoationMessage = new CarLoationMessage(latLngs.get(latLngs.size()-1).latitude,latLngs.get(latLngs.size()-1).longitude
+//        ,time,"asd",0),false,4000);
     }
 
-*/
+
 }

@@ -1,4 +1,4 @@
-package com.trust.shengyu.calltaxi;
+package com.trust.shengyu.calltaxi.base;
 
 import android.app.Activity;
 import android.content.Context;
@@ -13,7 +13,11 @@ import android.widget.Toast;
 
 
 import com.jakewharton.rxbinding2.view.RxView;
-import com.trust.shengyu.calltaxi.activitys.LoginActivity;
+import com.trust.shengyu.calltaxi.Config;
+import com.trust.shengyu.calltaxi.R;
+import com.trust.shengyu.calltaxi.activitys.registerandlogin.LoginActivity;
+import com.trust.shengyu.calltaxi.tools.dialog.TrustDialog;
+import com.trust.shengyu.calltaxi.tools.gps.DrawLiner;
 import com.trust.shengyu.calltaxi.tools.gps.Positioning;
 
 import java.util.Map;
@@ -30,8 +34,10 @@ public class BaseActivity extends AppCompatActivity {
 //    protected MainActivity mainActivity ;
     private Context context = BaseActivity.this;
     private Toast toast;
-
+    protected TrustDialog trustDialog;
     protected Positioning positioning;
+    protected  Activity mActivity;
+    protected DrawLiner drawLiner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,14 +54,46 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void init() {
+        drawLiner = new DrawLiner(context);
         positioning = new Positioning();
+        trustDialog = new TrustDialog();
+        trustDialog.setOnTrustDialogListener(new TrustDialog.onTrustDialogListener() {
+            @Override
+            public void resultOrderDialog(String startName, String endName, int taxiCast) {
+                getOrderDialogResult(startName,endName,taxiCast);
+            }
+        });
     }
 
+    //------------------------自定义--------------------------------------------
+    protected void getOrderDialogResult(String startName, String endName, int taxiCast){
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //-------------------------基础配置-------------------------------------------------------------------
 
     public void requestCallBeack(String url, Map<String,Object> map,int type,boolean isNeed){
 
     }
-
 
     //网络请求回调
 
@@ -163,18 +201,22 @@ public class BaseActivity extends AppCompatActivity {
     }
     Snackbar snackbar;
     protected void showSnackbar(View v,String description,String msg){
-        if (snackbar == null) {
+
             snackbar =  Snackbar.make(v, description,Snackbar.LENGTH_LONG)
                     .setAction("Undo", new View.OnClickListener(){
                         @Override
                         public void onClick(View v) {
                         }
                     });
-        }else{
-            snackbar.setText(msg);
-        }
         snackbar.show();
     }
+
+
+
+
+
+
+
 
 
 }
