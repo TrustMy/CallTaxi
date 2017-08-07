@@ -5,7 +5,11 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.trust.shengyu.calltaxi.R;
 import com.trust.shengyu.calltaxi.base.BaseActivity;
@@ -24,6 +28,7 @@ public class OrderHistoryActivity extends BaseActivity {
     RecyclerView orderRecyclerview;
     private OrderHistoryAdatper orderHistoryAdapterl;
     private Context context = OrderHistoryActivity.this;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +50,8 @@ public class OrderHistoryActivity extends BaseActivity {
     }
 
     private void initView() {
+        TextView textView = (TextView) findViewById(R.id.irderhistory_toolbar).findViewById(R.id.title);
+        textView.setText("行程记录");
         orderHistoryAdapterl = new OrderHistoryAdatper(context);
         orderHistoryAdapterl.setItemOnClickListener(new BaseRecyclerViewAdapter.ItemOnClickListener() {
             @Override

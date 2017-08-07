@@ -414,5 +414,4 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
         trustDialog.showOrderDialog(this,"徐汇区","静安区",36);
     }
 
-
 }

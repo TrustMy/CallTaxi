@@ -27,22 +27,11 @@
         android:gravity="center_vertical"
         >
 
-
-        <TextView
-            android:textColor="@color/colorWhite"
-            android:drawableLeft="@mipmap/ic_launcher"
-            android:gravity="center"
-            android:text="手机号:"
-            android:drawablePadding="6dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-
-
-            />
-
         <EditText
+            android:hint="手机号:"
+            android:drawableLeft="@mipmap/ic_launcher"
             android:inputType="number"
-            android:id="@+id/login_user"
+            android:id="@+id/registerex_user"
             android:textColor="@color/colorAccent"
             android:gravity="center_vertical"
             android:layout_width="match_parent"
@@ -68,21 +57,49 @@
         style="@style/IndentationAbout"
         >
 
-
-        <TextView
-            android:textColor="@color/colorWhite"
-            android:drawableLeft="@mipmap/ic_launcher"
-            android:gravity="center"
-            android:text="密码:"
-            android:drawablePadding="14dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            />
-
         <EditText
+            android:hint="请输入验证码"
+            android:drawableLeft="@mipmap/ic_launcher"
             android:inputType="numberPassword"
             android:textColor="@color/colorAccent"
-            android:id="@+id/login_pwd"
+            android:id="@+id/registere_verification_code"
+            android:gravity="center_vertical"
+            android:layout_width="@dimen/x185"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            />
+
+        <Button
+            android:id="@+id/registere_verification_code_btn"
+            android:textSize="@dimen/x14"
+            android:background="@null"
+            android:text="| 获取验证码"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <View
+        style="@style/IndentationAbout"
+        android:background="@color/colorWhite"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"></View>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        style="@style/IndentationAbout"
+        >
+
+        <EditText
+            android:drawableLeft="@mipmap/ic_launcher"
+            android:hint="密码:"
+            android:inputType="numberPassword"
+            android:textColor="@color/colorAccent"
+            android:id="@+id/registere_pwd"
             android:gravity="center_vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -102,37 +119,28 @@
 
     <Button
         android:layout_marginTop="@dimen/y10"
-       android:id="@+id/login_submit"
-       android:text= "登录"
-       android:layout_width="match_parent"
-       android:layout_height="wrap_content"
+        android:id="@+id/registere_submit"
+        android:text= "注册"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         style="@style/IndentationAbout"
         />
 
-    <TextView
-        android:id="@+id/login_forgetpassword"
-        android:layout_marginTop="@dimen/y10"
-        android:textColor="@color/colorWhite"
-        android:text="忘记密码?"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-
 
     <LinearLayout
-        android:id="@+id/login_registered"
+        android:id="@+id/registered_login"
         android:layout_marginTop="@dimen/y20"
         android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
         <TextView
-            android:text="没有账号?"
+            android:text="已有账号?"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <TextView
-            android:text="注册一个!"
+            android:text="立即登录!"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 

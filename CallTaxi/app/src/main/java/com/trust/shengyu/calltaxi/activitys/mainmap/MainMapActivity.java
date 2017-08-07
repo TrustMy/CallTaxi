@@ -69,7 +69,6 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
         mapView.onCreate(savedInstanceState);// 此方法必须重写
         initMap();
         initView();
-
     }
 
     private void initMap() {
@@ -94,7 +93,6 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
 
             @Override
             public void onCameraChangeFinish(CameraPosition postion) {
-
                 LatLng latLng = screenMarker.getPosition();
                 L.d("目标点:" + latLng.toString());
                 mEndPoint = new LatLonPoint(latLng.latitude, latLng.longitude);
