@@ -13,6 +13,8 @@ import com.trust.shengyu.calltaxidriver.activitys.mainmap.MainMapActivity;
 import com.trust.shengyu.calltaxidriver.base.BaseActivity;
 import com.trust.shengyu.calltaxidriver.R;
 import com.trust.shengyu.calltaxidriver.mqtt.network.CallTaxiCommHelper;
+import com.trust.shengyu.calltaxidriver.tools.L;
+import com.trust.shengyu.calltaxidriver.tools.beans.Bean;
 
 import java.util.List;
 
@@ -36,8 +38,7 @@ public class LoginActivity extends BaseActivity {
         ButterKnife.bind(this);
         initView();
         initDate();
-        CallTaxiCommHelper callTaxiCommHelper =  new CallTaxiCommHelper(context);
-        callTaxiCommHelper.doClientConnection();
+
 //        callTaxiCommHelper.publish("trust",1,"发送msg");
         /*
         callTaxiCommHelper.unbundledTopics("trust");
@@ -45,12 +46,14 @@ public class LoginActivity extends BaseActivity {
         */
     }
 
+
+
     private void initDate() {
-        WifiManager wifiManager  = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        List<android.net.wifi.ScanResult> list =  wifiManager.getScanResults();
-        for (int i = 0; i < list.size(); i++) {
-            Log.d("lhh", "initDate:  wifi:BSSID"+list.get(i).BSSID+"|SSID:"+list.get(i).SSID);
-        }
+//        WifiManager wifiManager  = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+//        List<android.net.wifi.ScanResult> list =  wifiManager.getScanResults();
+//        for (int i = 0; i < list.size(); i++) {
+//            Log.d("lhh", "initDate:  wifi:BSSID"+list.get(i).BSSID+"|SSID:"+list.get(i).SSID);
+//        }
     }
 
 
@@ -66,11 +69,10 @@ public class LoginActivity extends BaseActivity {
             if (pwd != null) {
 //                showSnackbar(loginSubmit,"说明",null);
                 startActivity(new Intent(context,MainMapActivity.class));
+                finish();
             }
         }
     }
-
-
 
 
 

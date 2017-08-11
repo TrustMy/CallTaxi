@@ -15,6 +15,7 @@ import com.trust.shengyu.calltaxi.R;
 import com.trust.shengyu.calltaxi.base.BaseActivity;
 import com.trust.shengyu.calltaxi.base.BaseRecyclerViewAdapter;
 import com.trust.shengyu.calltaxi.tools.L;
+import com.trust.shengyu.calltaxi.tools.beans.OrderHistoryBean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,18 +40,25 @@ public class OrderHistoryActivity extends BaseActivity {
     }
 
     private void initData() {
-        List<String>  ms = new ArrayList<>();
-        ms.add("1111111111111111111111111111111111111111");
-        ms.add("222222222222222222222222222222222222222");
-        ms.add("333333333333333333333333333333333333");
-        ms.add("44444444444444444444444444444444");
-        ms.add("555555555555555555555555555");
+        List<OrderHistoryBean>  ms = new ArrayList<>();
+        ms.add(new OrderHistoryBean(1111L,15,30,10,"沪A1111111"));
+        ms.add(new OrderHistoryBean(1111L,15,30,10,"沪A1111111"));
+        ms.add(new OrderHistoryBean(1111L,15,30,10,"沪A1111111"));
+        ms.add(new OrderHistoryBean(1111L,15,30,10,"沪A1111111"));
+        ms.add(new OrderHistoryBean(1111L,15,30,10,"沪A1111111"));
+        ms.add(new OrderHistoryBean(1111L,15,30,10,"沪A1111111"));
+        ms.add(new OrderHistoryBean(1111L,15,30,10,"沪A1111111"));
+        ms.add(new OrderHistoryBean(1111L,15,30,10,"沪A1111111"));
+        ms.add(new OrderHistoryBean(1111L,15,30,10,"沪A1111111"));
+        ms.add(new OrderHistoryBean(1111L,15,30,10,"沪A1111111"));
+        ms.add(new OrderHistoryBean(1111L,15,30,10,"沪A1111111"));
+
         orderHistoryAdapterl.setMl(ms);
         orderHistoryAdapterl.notifyDataSetChanged();
     }
 
     private void initView() {
-        TextView textView = (TextView) findViewById(R.id.irderhistory_toolbar).findViewById(R.id.title);
+        TextView textView = (TextView) bindView(this,R.id.irderhistory_toolbar,R.id.title);
         textView.setText("行程记录");
         orderHistoryAdapterl = new OrderHistoryAdatper(context);
         orderHistoryAdapterl.setItemOnClickListener(new BaseRecyclerViewAdapter.ItemOnClickListener() {

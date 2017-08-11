@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import com.trust.shengyu.calltaxidriver.base.BaseActivity;
 import com.trust.shengyu.calltaxidriver.R;
+import com.trust.shengyu.calltaxidriver.tools.beans.Bean;
 
 public class MainActivity extends BaseActivity {
 
@@ -12,4 +13,6 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
     }
+
+
 }

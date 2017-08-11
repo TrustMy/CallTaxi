@@ -2,6 +2,7 @@ package com.trust.shengyu.calltaxi.mqtt.network;
 
 import android.content.Context;
 
+import com.trust.shengyu.calltaxi.Config;
 import com.trust.shengyu.calltaxi.mqtt.MqttCommHelper;
 
 /**
@@ -16,10 +17,11 @@ public class CallTaxiCommHelper extends MqttCommHelper {
 
     @Override
     protected void iniServer() {
-        host = "tcp://192.168.1.12:61613";
-        userName = "admin";
-        passWord = "password";
-        topics = new String[]{"trust","lh"};
-        clientId = "trustDream";
+        host = Config.TestMqttServer;
+        userName = Config.TestUserName;
+        passWord = Config.TestPassWord;
+        submintTopics = Config.TestTopics;
+        clientId = Config.TestClientId;
+        sendTopic = Config.sendTopic;
     }
 }

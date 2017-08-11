@@ -49,7 +49,7 @@ public class RegisteredActivity extends BaseActivity {
 
                 break;
             case R.id.registere_verification_code_btn:
-                trustTools.Countdown(registereVerificationCodeBtn, 60);
+//                trustTools.Countdown(registereVerificationCodeBtn, 60);
                 break;
             case R.id.registered_login:
                 finish();

@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.trust.shengyu.calltaxi.R;
 import com.trust.shengyu.calltaxi.base.BaseRecyclerViewAdapter;
+import com.trust.shengyu.calltaxi.tools.beans.OrderHistoryBean;
 
 import java.util.List;
 
@@ -30,15 +31,23 @@ public class OrderHistoryAdatper extends BaseRecyclerViewAdapter {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-
-        ((OrderHistoryViewHolder)holder).textView.setText(((List<String>)ml).get(position));
+        OrderHistoryViewHolder viewHolder = (OrderHistoryViewHolder) holder;
+        viewHolder.OrderTime.setText(((List<OrderHistoryBean>)ml).get(position).getOrderTime()+"");
+        viewHolder.money.setText(((List<OrderHistoryBean>)ml).get(position).getMoney()+"");
+        viewHolder.tripTime.setText(((List<OrderHistoryBean>)ml).get(position).getTripTime()+"");
+        viewHolder.tripMileage.setText(((List<OrderHistoryBean>)ml).get(position).getTripMileage()+"");
+        viewHolder.licensePlate.setText(((List<OrderHistoryBean>)ml).get(position).getLicensePlate()+"");
     }
 
     class OrderHistoryViewHolder extends ViewHolder{
-        TextView textView;
+        TextView OrderTime,money,tripTime,tripMileage,licensePlate;
         public OrderHistoryViewHolder(View itemView) {
             super(itemView);
-            textView = (TextView) itemView.findViewById(R.id.orderhistory_item_tv);
+            OrderTime = (TextView) itemView.findViewById(R.id.orderhistory_item_tv);
+            money = (TextView) itemView.findViewById(R.id.order_history_item_money);
+            tripTime = (TextView) itemView.findViewById(R.id.order_history_item_tripTime);
+            tripMileage = (TextView) itemView.findViewById(R.id.order_history_item_tripMileage);
+            licensePlate = (TextView) itemView.findViewById(R.id.order_history_item_licensePlate);
         }
     }
 }

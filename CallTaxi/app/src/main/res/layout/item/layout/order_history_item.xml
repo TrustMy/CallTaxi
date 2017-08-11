@@ -33,6 +33,7 @@
         android:layout_marginLeft="@dimen/x20"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:padding="@dimen/x4"
         android:orientation="vertical">
 
     <TextView
@@ -65,6 +66,7 @@
                       android:layout_height="wrap_content" />
 
                   <TextView
+                      android:id="@+id/order_history_item_licensePlate"
                       android:text="沪A2456"
                       android:layout_width="wrap_content"
                       android:layout_height="wrap_content" />
@@ -85,6 +87,7 @@
                         android:layout_height="wrap_content" />
 
                     <TextView
+                        android:id="@+id/order_history_item_tripTime"
                         android:text="30分钟"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
@@ -114,6 +117,7 @@
                         android:layout_height="wrap_content" />
 
                     <TextView
+                        android:id="@+id/order_history_item_money"
                         android:text="15"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
@@ -134,6 +138,7 @@
                         android:layout_height="wrap_content" />
 
                     <TextView
+                        android:id="@+id/order_history_item_tripMileage"
                         android:text="5 km"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />

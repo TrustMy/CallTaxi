@@ -41,11 +41,15 @@
 
         <!-- Mqtt Service -->
         <service android:name="org.eclipse.paho.android.service.MqttService" />
+        <service android:name=".mqtt.TrustServer"/>
 
         <activity android:name=".activitys.WifiActivity" />
         <activity android:name=".activitys.orderhistory.OrderHistoryActivity" />
         <activity android:name=".activitys.registerandlogin.RegisteredActivity" />
-        <activity android:name=".activitys.resetpassword.ResetPasswordActivity"></activity>
+        <activity android:name=".activitys.resetpassword.ResetPasswordActivity" />
+        <activity android:name=".activitys.mainmap.MainMapTestActivity" />
+        <activity android:name=".activitys.selectend.SelectEndActivity" />
+        <activity android:name=".activitys.orderstatus.OrderStatusActivity"></activity>
     </application>
 
 </manifest>

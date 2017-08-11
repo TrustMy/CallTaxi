@@ -11,6 +11,7 @@ import com.trust.shengyu.calltaxidriver.R;
 import com.trust.shengyu.calltaxidriver.base.BaseActivity;
 import com.trust.shengyu.calltaxidriver.base.BaseRecyclerViewAdapter;
 import com.trust.shengyu.calltaxidriver.tools.L;
+import com.trust.shengyu.calltaxidriver.tools.beans.Bean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,8 @@ public class OrderHistoryActivity extends BaseActivity {
         initView();
         initData();
     }
+
+
 
     private void initData() {
         List<String>  ms = new ArrayList<>();

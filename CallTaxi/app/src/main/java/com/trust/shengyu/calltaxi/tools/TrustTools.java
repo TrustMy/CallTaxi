@@ -4,6 +4,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
@@ -72,4 +74,14 @@ public class TrustTools <T extends View> {
             ((TextView)v).setText(msg);
         }
     }
+
+
+    //-----------------------时间--------------------------------------
+    public static String  getSystemTimeString(){
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date dateTime = new Date(System.currentTimeMillis());//获取当前时间
+        String systemTime = formatter.format(dateTime);
+        return systemTime;
+    }
+
 }

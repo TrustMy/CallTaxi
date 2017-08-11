@@ -4,7 +4,11 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.trust.shengyu.calltaxi.Config;
+import com.trust.shengyu.calltaxi.base.BaseActivity;
+import com.trust.shengyu.calltaxi.db.DBManager;
 import com.trust.shengyu.calltaxi.tools.L;
+import com.trust.shengyu.calltaxi.tools.TrustTools;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -14,6 +18,21 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.Map;
+import java.util.Objects;
+import java.util.WeakHashMap;
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 
 /**
@@ -23,8 +42,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 public abstract class MqttCommHelper {
     protected MqttAndroidClient client;
     protected MqttConnectOptions conOpt;
-
-
+    DBManager dbManager;
     private final int initConnectionError = 0x001,connectionError = 0x002;
 
     public static boolean pushStatus = false;
@@ -41,12 +59,14 @@ public abstract class MqttCommHelper {
     protected String passWord ;
     protected String myTopic ;
     protected String clientId ;
-    protected String [] topics ;
+    protected String [] submintTopics ;
     protected int[] qoss = {1,1};
+    protected String sendTopic;
     protected Context context;
 
     public MqttCommHelper(Context context) {
         this.context = context;
+        dbManager = new DBManager(context);
         iniServer();
         initMqtt();
     }
@@ -80,7 +100,7 @@ public abstract class MqttCommHelper {
                 conOpt.setUserName(userName);
                 // 密码
                 conOpt.setPassword(passWord.toCharArray());
-                //设置保存session 接收离线消息
+                //设置保存session 接收离线消息 // false 离线保存  true离线清空
                 conOpt.setCleanSession(false);
                 //自动重连
 //                conOpt.setAutomaticReconnect(true);
@@ -109,8 +129,8 @@ public abstract class MqttCommHelper {
 
         @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
-            String msg = new String(message.getPayload());
-            L.d("messageArrived:"+msg);
+            dbManager.addData("接收到的"+new String(message.getPayload())+"|"+ TrustTools.getSystemTimeString());
+            mqttResultCallBack.CallBack(topic,new String(message.getPayload()));
         }
 
         @Override
@@ -124,10 +144,40 @@ public abstract class MqttCommHelper {
         public void connectionLost(Throwable arg0) {
             // 失去连接，重连
             doConnect = true;
-            L.e("connectionLost error : "+arg0.getMessage());
+//            L.e("connectionLost error : "+arg0.getMessage());
 
+            mqttConnectionStatus(Config.MQTT_TYPE_CONNECTION_EXCEPTION);
         }
     };
+
+    private void mqttConnectionStatus(int status) {
+
+        if (status == Config.MQTT_TYPE_CONNECTION_SUCCESS) {
+            BaseActivity.mqttConnectionStatus = true;
+        }else{
+            BaseActivity.mqttConnectionStatus = false;
+        }
+
+
+        Observable
+                .fromArray(100)
+                .subscribeOn(Schedulers.io())
+                .timer(Config.MqttReconnectionTime, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .compose(new ObservableTransformer<Object, Object>() {
+                    @Override
+                    public ObservableSource<Object> apply(Observable<Object> upstream) {
+                        return upstream.subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread());
+                    }
+                })
+                .subscribe(new Consumer<Object>() {
+                    @Override
+                    public void accept(@NonNull Object o) throws Exception {
+                        doClientConnection();
+                    }
+                });
+    }
 
     // MQTT是否连接成功
     private IMqttActionListener iMqttActionListener = new IMqttActionListener() {
@@ -137,8 +187,8 @@ public abstract class MqttCommHelper {
             doConnect = false;
                 // 订阅myTopic话题
 //                client.subscribe(myTopic,1);
-                subscribeTopic(topics[0],1);
-                publish(topics[0],1,"发送的msg");
+                subscribeTopic(submintTopics[0],1);
+            mqttConnectionStatus(Config.MQTT_TYPE_CONNECTION_SUCCESS);
 
             L.d(" mqtt connection success conOpt.isAutomaticReconnect():"+conOpt.isAutomaticReconnect());
 
@@ -150,8 +200,8 @@ public abstract class MqttCommHelper {
             // 连接失败，重连
             L.e("connection onFailure :"+arg1.getMessage());
 
+            mqttConnectionStatus(Config.MQTT_TYPE_CONNECTION_EXCEPTION);
             /*
-
             if(workStatus){
                 mqttSendControll.sendMessage();
             }
@@ -223,7 +273,7 @@ public abstract class MqttCommHelper {
     public  void publish(String topic ,Integer qos  ,String msg){
         synchronized (this){
             if(doConnect){
-                doClientConnection();
+                mqttConnectionStatus(Config.MQTT_TYPE_CONNECTION_EXCEPTION);
                 return;
             }
 
@@ -232,8 +282,9 @@ public abstract class MqttCommHelper {
                 Boolean retained = false;
                 if(!pushStatus && msg != null){
                     try {
-                        L.d("publish :"+msg);
+                        L.d("topic:"+topic+"publish :"+msg);
                         client.publish(topic, msg.getBytes(), qos.intValue(), retained.booleanValue());
+                        dbManager.addData("发送的json:"+msg+"|"+TrustTools.getSystemTimeString());
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }
@@ -252,7 +303,18 @@ public abstract class MqttCommHelper {
         }
     }
 
+    public interface onMqttCallBackResultListener{
+        void CallBack(String topic,Object msg);
+    }
+
+    public onMqttCallBackResultListener mqttResultCallBack;
+
+
     public void setWorkStatus(boolean workStatus) {
         this.workStatus = workStatus;
+    }
+
+    public void setOnMqttCallBackResultListener(onMqttCallBackResultListener onMqttCallBackResultListener){
+        mqttResultCallBack = onMqttCallBackResultListener;
     }
 }

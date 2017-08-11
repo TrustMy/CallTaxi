@@ -6,11 +6,20 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.amap.api.location.AMapLocation;
 import com.amap.api.maps.AMap;
@@ -26,64 +35,104 @@ import com.amap.api.services.core.LatLonPoint;
 import com.trust.shengyu.calltaxi.Config;
 import com.trust.shengyu.calltaxi.R;
 import com.trust.shengyu.calltaxi.activitys.orderhistory.OrderHistoryActivity;
+import com.trust.shengyu.calltaxi.activitys.orderstatus.OrderStatusActivity;
+import com.trust.shengyu.calltaxi.activitys.selectend.SelectEndActivity;
 import com.trust.shengyu.calltaxi.base.BaseActivity;
-import com.trust.shengyu.calltaxi.mqtt.network.CallTaxiCommHelper;
 import com.trust.shengyu.calltaxi.tools.L;
+import com.trust.shengyu.calltaxi.tools.TrustTools;
+import com.trust.shengyu.calltaxi.tools.beans.Bean;
+import com.trust.shengyu.calltaxi.tools.beans.MqttResultBean;
 import com.trust.shengyu.calltaxi.tools.gps.ConversionLocation;
 import com.trust.shengyu.calltaxi.tools.gps.Maker;
 import com.trust.shengyu.calltaxi.tools.gps.Positioning;
 import com.trust.shengyu.calltaxi.tools.gps.routeplan.RoutePlan;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class MainMapActivity extends BaseActivity implements Positioning.PositioningListener {
-    @BindView(R.id.map_order_starts)
-    Button mapOrderStarts;
+
     @BindView(R.id.map_order_end)
     Button mapOrderEnd;
-    @BindView(R.id.map_order_start_name)
-    EditText mapOrderStartName;
-    @BindView(R.id.map_order_end_name)
-    EditText mapOrderEndName;
-    @BindView(R.id.map_order_history)
-    Button mapOrderHistory;
+    @BindView(R.id.clear)
+    Button clear;
+    @BindView(R.id.main_map_start_tv)
+    TextView mainMapStartTv;
+    @BindView(R.id.main_map_drawerlayout)
+    DrawerLayout mainMapDrawerlayout;
+    @BindView(R.id.main_map_toolbar)
+    Toolbar mainMapToolbar;
+    @BindView(R.id.main_drawerlayout_black)
+    ImageButton mainDrawerlayoutBlack;
+    @BindView(R.id.main_drawerlayout_user_logo)
+    ImageView mainDrawerlayoutUserLogo;
+    @BindView(R.id.main_drawerlayout_user_name)
+    TextView mainDrawerlayoutUserName;
+    @BindView(R.id.main_drawerlayout_sex)
+    ImageView mainDrawerlayoutSex;
+    @BindView(R.id.main_drawerlayout_user_status)
+    TextView mainDrawerlayoutUserStatus;
+    @BindView(R.id.main_drawerlayout_credit_points)
+    TextView mainDrawerlayoutCreditPoints;
+    @BindView(R.id.main_drawerlayout_trip_history_btn)
+    LinearLayout mainDrawerlayoutTripHistoryBtn;
+    @BindView(R.id.textView4)
+    TextView textView4;
+    @BindView(R.id.main_map_end_tv)
+    TextView mainMapEndTv;
+    @BindView(R.id.main_map_order_submit_cardview_btn)
+    CardView mainMapOrderSubmitCardviewBtn;//提交按钮最外面的卡片布局
+    @BindView(R.id.main_map_update)
+    ImageButton mainMapUpdate;
+    @BindView(R.id.main_map_my_self)
+    ImageButton mainMapMySelf;
+    @BindView(R.id.main_order_cost)
+    TextView mainOrderCost;
+    @BindView(R.id.main_order_cost_layout)
+    LinearLayout mainOrderCostLayout;
+    @BindView(R.id.main_map_order_submit_btn)
+    Button mainMapOrderSubmitBtn;
     private MapView mapView;
     private AMap aMap;
     private Marker screenMarker = null, growMarker = null;
     private ConversionLocation conversionLocation;
     private RoutePlan routePlan;
     private Context context = MainMapActivity.this;
+    private int REQUEST_CODE = 1;
 
     private LatLonPoint mStartPoint, mEndPoint;
+    private String startName, endName;
+    private int taxiCast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_map);
         ButterKnife.bind(this);
-        mapView = (MapView) findViewById(R.id.base_map);
+        mapView = (MapView) bindView(this, R.id.mainmap_map, R.id.base_map);
         mapView.onCreate(savedInstanceState);// 此方法必须重写
         initMap();
         initView();
+
     }
 
     private void initMap() {
         if (aMap == null) {
             aMap = mapView.getMap();
         }
-
         aMap.setOnMapLoadedListener(new AMap.OnMapLoadedListener() {
             @Override
             public void onMapLoaded() {
                 addMarkersToMap();
             }
         });
-
-
         // 设置可视范围变化时的回调的接口方法
         aMap.setOnCameraChangeListener(new AMap.OnCameraChangeListener() {
             @Override
@@ -104,12 +153,29 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
     }
 
     private void initView() {
+        mainMapToolbar.setTitle("");
+        setSupportActionBar(mainMapToolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_meuns);
+        }
+
+
+        callTaxiCommHelper.setOnMqttCallBackResultListener(onMqttCallBackResultListener);
+
         positioning.setPostitioningListener(this);
         positioning.startGps();
 
-        baseSetOnClick(mapOrderStarts);
+
         baseSetOnClick(mapOrderEnd);
-        baseSetOnClick(mapOrderHistory);
+        baseSetOnClick(clear);
+
+        baseSetOnClick(mainDrawerlayoutBlack);
+        baseSetOnClick(mainDrawerlayoutTripHistoryBtn);
+        baseSetOnClick(mainMapEndTv);
+        baseSetOnClick(mainMapOrderSubmitBtn);
+
 
         conversionLocation = new ConversionLocation();
         conversionLocation.setAddressListener(adddressListener);
@@ -118,24 +184,76 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
         routePlan.setOnRoutePlanListener(new RoutePlan.onRoutePlanListener() {
             @Override
             public void result(Object money) {
-                trustDialog.showOrderDialog(Config.activity,mapOrderStartName.getText().toString(),mapOrderEndName.getText().toString(),(int)money);
+                L.d("获取费用");
+                int moneys = (int) money;
+                taxiCast = moneys;
+                mainOrderCostLayout.setVisibility(View.VISIBLE);
+                mainOrderCost.setText(moneys + "");
+
+                startName = mainMapStartTv.getText().toString();
+                endName = mainMapEndTv.getText().toString();
+//                trustDialog.showOrderDialog(Config.activity, mainMapStartTv.getText().toString(), mainMapEndTv.getText().toString(), (int) money);
             }
         });
     }
 
     @Override
-    public void baseClickResult(View v) {
-        switch (v.getId()) {
-            case R.id.map_order_starts:
-                routePlan.searchRouteResult(mStartPoint, mEndPoint);
-
-
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                mainMapDrawerlayout.openDrawer(GravityCompat.START);
                 break;
+        }
+        return true;
+    }
+
+    @Override
+    public void baseClickResult(View v) {
+        Map<String, Object> map = new WeakHashMap<>();
+        Map<String, Object> maps = new WeakHashMap<>();
+
+        switch (v.getId()) {
+
             case R.id.map_order_end:
 
+                maps.put("msg", "我不想坐车了!");
+
+                map.put("status", true);
+                map.put("time", TrustTools.getSystemTimeString());
+                map.put("type", Config.MQTT_TYPE_REFUSED_ORDER);
+                map.put("msg", maps);
+                sendMqttMessage(Config.sendTopic, 1, new JSONObject(map).toString());
                 break;
-            case R.id.map_order_history:
-                startActivity(new Intent(context,OrderHistoryActivity.class));
+
+
+            case R.id.clear:
+                dbManager.deleteAll();
+                break;
+
+            case R.id.main_drawerlayout_black:
+                mainMapDrawerlayout.closeDrawer(GravityCompat.START);
+                break;
+
+            case R.id.main_drawerlayout_trip_history_btn:
+                startActivity(new Intent(context, OrderHistoryActivity.class));
+                break;
+
+            case R.id.main_map_end_tv:
+                startActivityForResult(new Intent(context, SelectEndActivity.class), REQUEST_CODE);
+                break;
+
+            case R.id.main_map_order_submit_btn:
+                maps.put("startName", startName);
+                maps.put("endName", endName);
+                maps.put("taxiCast", taxiCast);
+
+                map.put("type", Config.MQTT_TYPE_PLACE_AN_ORDER);
+                map.put("status", true);
+                map.put("msg", maps);
+                map.put("time", TrustTools.getSystemTimeString());
+                sendMqttMessage(Config.sendTopic, 1, new JSONObject(map).toString());
+
+
                 break;
         }
     }
@@ -156,21 +274,6 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
         List<LatLng> ml = new ArrayList<>();
         ArrayList<Marker> ma = new ArrayList<>();
         ArrayList<MarkerOptions> l = new ArrayList<>();
-        ml.add(new LatLng(31.230133, 121.417701));
-        ml.add(new LatLng(31.240133, 121.417701));
-        ml.add(new LatLng(31.245133, 121.417701));
-        ml.add(new LatLng(31.243133, 121.417701));
-        ml.add(new LatLng(31.246133, 121.417701));
-        ml.add(new LatLng(31.230133, 121.417701));
-        ml.add(new LatLng(31.240133, 121.417701));
-        ml.add(new LatLng(31.245133, 121.417701));
-        ml.add(new LatLng(31.243133, 121.417701));
-        ml.add(new LatLng(31.246133, 121.417701));
-        ml.add(new LatLng(31.230133, 121.417701));
-        ml.add(new LatLng(31.240133, 121.417701));
-        ml.add(new LatLng(31.245133, 121.417701));
-        ml.add(new LatLng(31.243133, 121.417701));
-        ml.add(new LatLng(31.246133, 121.417701));
         ml.add(new LatLng(31.230133, 121.417701));
         ml.add(new LatLng(31.240133, 121.417701));
         ml.add(new LatLng(31.245133, 121.417701));
@@ -225,10 +328,9 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
         Point screenPosition = aMap.getProjection().toScreenLocation(latLng);
         screenMarker = aMap.addMarker(new MarkerOptions()
                 .anchor(0.5f, 0.5f)
-                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher)));
+                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.po)));
         //设置Marker在屏幕上,不跟随地图移动
         screenMarker.setPositionByPixels(screenPosition.x, screenPosition.y);
-
     }
 
 
@@ -312,6 +414,7 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
      */
     @Override
     protected void onDestroy() {
+
         super.onDestroy();
         mapView.onDestroy();
     }
@@ -320,7 +423,7 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
         @Override
         public void getAddress(boolean status, String msg) {
             if (status) {
-                mapOrderEndName.setText(msg);
+                mainMapEndTv.setText(msg);
             }
         }
 
@@ -335,7 +438,8 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
     public void onLocationChanged(AMapLocation aMapLocation) {
         L.d("定位成功:" + aMapLocation.getLatitude() + "|" + aMapLocation.getLongitude());
         Maker.showMaker(aMap, new LatLng(aMapLocation.getLatitude(), aMapLocation.getLongitude()));
-        mapOrderStartName.setText(aMapLocation.getAddress());
+        mainMapStartTv.setText(aMapLocation.getAddress());
+
         mStartPoint = new LatLonPoint(aMapLocation.getLatitude(), aMapLocation.getLongitude());
     }
 
@@ -346,42 +450,42 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
 
     @Override
     protected void getOrderDialogResult(String startName, String endName, int taxiCast) {
-        L.d(startName+endName+taxiCast);
-        showSnackbar(mapOrderStartName,"下单成功!请耐心等待司机接单.",null);
-        handler.sendEmptyMessageDelayed(1,1000 * 10);
+        L.d(startName + endName + taxiCast);
+
+
     }
 
-    int num ;
-    Handler handler = new Handler(){
+    int num;
+    Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            switch (msg.what){
+            switch (msg.what) {
                 case 1:
                     waitOrder();
                     break;
                 case 2:
-                    drawLine(2,3);
+                    drawLine(2, 3);
 
                     break;
                 case 3:
-                    drawLine(3,3);
+                    drawLine(3, 3);
                     break;
             }
         }
     };
 
-    public void waitOrder(){
-        showSnackbar(mapOrderStartName,"司机接单了,请耐心等待,司机正在赶往你所在地.",null);
+    public void waitOrder() {
+        showSnackbar(mainMapStartTv, "司机接单了,请耐心等待,司机正在赶往你所在地.", null);
         handler.sendEmptyMessage(2);
     }
 
-    public void drawLine(int what , int nums){
-        if(num == nums){
+    public void drawLine(int what, int nums) {
+        if (num == nums) {
             num = 0;
             handler.removeMessages(what);
-            if (what == 2){
+            if (what == 2) {
                 orderStart();
-            }else if(what == 3){
+            } else if (what == 3) {
                 endTrip();
             }
             return;
@@ -389,18 +493,58 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
         num++;
         List<LatLng> ml = new ArrayList<>();
         ml.add(new LatLng(31.245133, 121.417701));
-        drawLiner.drawTrickLine(aMap,ml,123123123123L);
+        drawLiner.drawTrickLine(aMap, ml, 123123123123L);
 
-        handler.sendEmptyMessageDelayed(what,1000 * 10);
+        handler.sendEmptyMessageDelayed(what, 1000 * 10);
     }
 
-    public void orderStart(){
-        showSnackbar(mapOrderStartName,"已经上车,订单生效!",null);
+    public void orderStart() {
+        showSnackbar(mainMapStartTv, "已经上车,订单生效!", null);
         handler.sendEmptyMessage(3);
     }
 
-    public void endTrip(){
-        showSnackbar(mapOrderStartName,"本次行程结束!请支付!",null);
+    public void endTrip() {
+        showSnackbar(mainMapStartTv, "本次行程结束!请支付!", null);
 
+    }
+
+    @Override
+    public void resultMqttTypeStartOrder(MqttResultBean bean) {
+        showSnackbar(mainMapStartTv, "已经上车!", null);
+    }
+
+    @Override
+    public void resultMqttTypeEndOrder(MqttResultBean bean) {
+        showSnackbar(mainMapStartTv, "已经下车", null);
+    }
+
+    @Override
+    public void resultMqttTypeRefusedOrder(MqttResultBean bean) {
+        showSnackbar(mainMapStartTv, "司机拒绝:" + bean.getMsg(), null);
+    }
+
+    @Override
+    public void resultMqttTypePlaceAnOrder(Bean bean) {
+        showSnackbar(mainMapStartTv, "司机接单了,马上跳转页面", null);
+        startActivity(new Intent(context, OrderStatusActivity.class));
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        int status;
+        if (requestCode == REQUEST_CODE) {
+            String msg = data.getStringExtra("end");
+            if (msg == null) {
+                L.e("什么都没有选择");
+                status = View.GONE;
+            } else {
+                L.d("选择成功");
+                status = View.VISIBLE;
+                routePlan.searchRouteResult(mStartPoint, mEndPoint);
+            }
+            mainMapOrderSubmitCardviewBtn.setVisibility(status);
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

@@ -15,7 +15,7 @@ import com.trust.shengyu.calltaxi.R;
 
 public class TrustDialog {
 
-    public void showOrderDialog(Activity activity , final String startName , final String endName , final int money){
+    public Dialog showOrderDialog(Activity activity , final String startName , final String endName , final int money){
         final Dialog dialog = new Dialog(activity, R.style.customDialog);
 
         View view = LayoutInflater.from(activity).inflate(R.layout.order_dialog,null);
@@ -34,6 +34,8 @@ public class TrustDialog {
             dialog.show();
         }
         cacelButton(dialog ,(Button) view.findViewById(R.id.order_dialog_cancel));
+
+        return dialog;
     }
 
 
@@ -56,4 +58,9 @@ public class TrustDialog {
             }
         });
     }
+
+    public void dissDialog(Dialog dialog){
+        dialog.dismiss();
+    }
+
 }

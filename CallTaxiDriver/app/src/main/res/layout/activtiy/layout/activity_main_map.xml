@@ -8,17 +8,15 @@
     android:orientation="vertical"
     tools:context="com.trust.shengyu.calltaxidriver.activitys.mainmap.MainMapActivity">
 
-
-
-
-
         <EditText
+            android:visibility="gone"
             android:id="@+id/map_order_start_name"
             android:hint="起点"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <EditText
+            android:visibility="gone"
             android:hint="终点"
             android:id="@+id/map_order_end_name"
             android:layout_width="wrap_content"
@@ -27,24 +25,36 @@
 
 
         <Button
-            android:text="order starts"
-            android:id="@+id/map_order_starts"
+            android:text="开始行程(已经接到顾客)"
+            android:id="@+id/map_trip_start"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
 
         <Button
-            android:text="order ends"
-            android:id="@+id/map_order_end"
+            android:text="结束行程(顾客已经到达目的地)"
+            android:id="@+id/map_trip_end"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <Button
-            android:text="order_history"
+            android:text="历史记录"
             android:id="@+id/map_order_history"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
-    <include
+
+        <Button
+            android:id="@+id/map_order_cancel"
+            android:text="取消订单"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <Button
+            android:id="@+id/clear"
+            android:text="删除数据"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <include
         android:id="@+id/mainmap_map"
         layout="@layout/map_layout"
         android:layout_width="match_parent"

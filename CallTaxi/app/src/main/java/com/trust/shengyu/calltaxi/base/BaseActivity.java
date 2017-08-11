@@ -1,29 +1,43 @@
 package com.trust.shengyu.calltaxi.base;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
 
+import com.google.gson.Gson;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.trust.shengyu.calltaxi.Config;
 import com.trust.shengyu.calltaxi.R;
 import com.trust.shengyu.calltaxi.activitys.registerandlogin.LoginActivity;
+import com.trust.shengyu.calltaxi.db.DBManager;
+import com.trust.shengyu.calltaxi.db.DbHelper;
+import com.trust.shengyu.calltaxi.mqtt.MqttCommHelper;
+import com.trust.shengyu.calltaxi.mqtt.TrustServer;
+import com.trust.shengyu.calltaxi.mqtt.network.CallTaxiCommHelper;
+import com.trust.shengyu.calltaxi.tools.L;
+
 import com.trust.shengyu.calltaxi.tools.StatusBar;
-import com.trust.shengyu.calltaxi.tools.TrustTools;
+import com.trust.shengyu.calltaxi.tools.beans.Bean;
+import com.trust.shengyu.calltaxi.tools.beans.MqttResultBean;
 import com.trust.shengyu.calltaxi.tools.dialog.TrustDialog;
 import com.trust.shengyu.calltaxi.tools.gps.DrawLiner;
 import com.trust.shengyu.calltaxi.tools.gps.Positioning;
-import com.trust.shengyu.calltaxi.tools.request.TrustRequest;
+
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -35,17 +49,34 @@ import io.reactivex.functions.Consumer;
 /**
  * Created by Trust on 2017/5/10.
  */
-public class BaseActivity extends AppCompatActivity {
-//    protected MainActivity mainActivity ;
+public abstract class BaseActivity extends AppCompatActivity {
+    //    protected MainActivity mainActivity ;
     private Context context = BaseActivity.this;
     private Toast toast;
     protected TrustDialog trustDialog;
     protected Positioning positioning;
-    protected  Activity mActivity;
+    protected Activity mActivity;
     protected DrawLiner drawLiner;
-    protected TrustTools trustTools;
-    protected TrustRequest trustRequest;
+    protected Gson gson;
+    protected DbHelper dbHelper;
+    protected DBManager dbManager;
+    public static boolean mqttConnectionStatus = false;
+    protected static CallTaxiCommHelper callTaxiCommHelper;
 
+    protected TrustServer mqttServer;
+
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            mqttServer = ((TrustServer.TrustBinder)iBinder).getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mqttServer = null;
+        }
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,12 +89,29 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void initPush() {
-        StatusBar.setColor(mActivity,Color.parseColor("#6ED18E"));
+        dbHelper = new DbHelper(context);
+        dbManager = new DBManager(context);
+        dbManager.selectAllData();
+
+        if(mqttServer == null){
+            bindService(new Intent(context,TrustServer.class),serviceConnection, Context.BIND_AUTO_CREATE);
+        }
+
+
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void init() {
+        StatusBar.setColor(Config.activity, Color.parseColor("#6ED18E"));
+        TrustServer.baseActivity = this;
 
-        trustTools = new TrustTools();
+        L.d("base Activity");
+        if (callTaxiCommHelper == null) {
+            callTaxiCommHelper = new CallTaxiCommHelper(context);
+            callTaxiCommHelper.doClientConnection();
+        }
+
+        gson = new Gson();
         drawLiner = new DrawLiner(context);
         positioning = new Positioning();
         trustDialog = new TrustDialog();
@@ -73,49 +121,92 @@ public class BaseActivity extends AppCompatActivity {
                 getOrderDialogResult(startName,endName,taxiCast);
             }
         });
-
-        trustRequest = new TrustRequest();
-        trustRequest.setOnResultCallBack(new TrustRequest.onResultCallBack() {
-            @Override
-            public void CallBack(int code, int status, Object object) {
-                if(status == Config.SUCCESS){
-                    successCallBeack(object,code);
-                }else{
-                    errorCallBeack(object,code);
-                }
-            }
-        });
     }
 
     //------------------------自定义--------------------------------------------
+    //dialog 点击回调
     protected void getOrderDialogResult(String startName, String endName, int taxiCast){
 
     }
+    //mqtt 收到push 回调
+    protected   MqttCommHelper.onMqttCallBackResultListener onMqttCallBackResultListener = new MqttCommHelper.onMqttCallBackResultListener() {
+        @Override
+        public void CallBack(String topic, final Object msg) {
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    //此时已在主线程中，可以更新UI了
+                    MqttResultBean bean =  gson.fromJson(msg.toString(), MqttResultBean.class);
+
+                    if (bean.getStatus()){
+                        switch (bean.getType()){
+                            case Config.MQTT_TYPE_PLACE_AN_ORDER:
+                                resultMqttTypePlaceAnOrder(null);
+                                break;
+                            case Config.MQTT_TYPE_START_ORDER:
+                                resultMqttTypeStartOrder(bean);
+                                break;
+                            case Config.MQTT_TYPE_END_ORDER:
+                                resultMqttTypeEndOrder(bean);
+                                break;
+                            case Config.MQTT_TYPE_REFUSED_ORDER:
+                                resultMqttTypeRefusedOrder(bean);
+                                break;
+
+                            default:
+                                resultMqttTypeOther(bean);
+                                break;
+                        }
+
+                        dissDialog();
+                    }else{
+//                        resultErrorMqtt("false:"+bean.getErrorMsg());
+                    }
+                }
+            });
+        }
+    };
 
 
+    private void resultErrorMqtt(String msg){
+        showToast(msg);
+    }
 
+    //下订单回调
+    public  void resultMqttTypePlaceAnOrder(Bean bean){
+        L.d("resultMqttTypePlaceAnOrder");
+    };
+    //开始订单回调
+    public  void resultMqttTypeStartOrder(MqttResultBean bean){};
+    //结束订单回调
+    public  void resultMqttTypeEndOrder(MqttResultBean bean){};
+    //拒绝订单回调
+    public  void resultMqttTypeRefusedOrder(MqttResultBean bean){};
+    //未知消息回调
+    public  void resultMqttTypeOther(MqttResultBean bean){};
 
+    public void sendMqttMessage(String topic ,int qos , String msg){
+        if(mqttConnectionStatus){
+            showDialog(mActivity,"1","2",1);
+            callTaxiCommHelper.publish(topic,qos,msg);
+        }else{
+            showToast("网络异常,请稍后重试!");
 
+        }
+    }
 
-
-
-
-
-
-
-
-
-
-
-
+    public void sendMqttMessage(String msg){
+        callTaxiCommHelper.publish(Config.sendTopic,1,msg);
+    }
 
 
 
 
     //-------------------------基础配置-------------------------------------------------------------------
-    //网络请求
-    public void requestCallBeack(String url, Map<String,Object> map,int code  , int requestTpye , int requestHeader ,String token){
-        trustRequest.Request(url,map,code,requestTpye,requestHeader,token);
+
+    public void requestCallBeack(String url, Map<String,Object> map,int type,boolean isNeed){
+
     }
 
     //网络请求回调
@@ -130,16 +221,14 @@ public class BaseActivity extends AppCompatActivity {
 
 
     }
-
-    //成功回调
     public void successCallBeack(Object obj,int type){
 
     }
-    //失败回调
+
     public void errorCallBeack(Object bean,int type){
 
     }
-    //防止重复点击
+
     protected void  baseSetOnClick(final View v){
         RxView.clicks(v).throttleFirst(Config.ClickTheInterval, TimeUnit.SECONDS).
                 subscribe(new Consumer<Object>() {
@@ -149,24 +238,38 @@ public class BaseActivity extends AppCompatActivity {
                     }
                 });
     }
-    //点击事件
+
     public void baseClickResult(View v){
 
     }
-    //显示等待框
-    public void showDialog(){
+
+    public void  onClickFinsh(final View v, final Activity activity){
 
     }
-    //隐藏等待框
+
+    public void  onClickFinsh( final Activity activity){
+        activity.finish();
+    }
+
+    public void showDialog(Activity activity,String name ,String end , int type){
+        dialog  = trustDialog.showOrderDialog(activity,name,end,type);
+    }
+    Dialog dialog;
     public void dissDialog(){
-
+        trustDialog.dissDialog(dialog);
+        dialog = null;
     }
 
+    public void finsh(Activity activity){
+        if (activity != null) {
+            activity.finish();
+        }
+    }
 
     /**
      * 申请验证码
      */
-    protected void requestVerificationCode(long phone) {
+    protected void requestCheckNum(long phone) {
         Map<String,Object> map =  new WeakHashMap<>();
         map.put("cp",phone);
 //        requestCallBeack(Config.get_check_num, map, Config.getCheckNum, Config.noAdd);
@@ -214,20 +317,19 @@ public class BaseActivity extends AppCompatActivity {
     Snackbar snackbar;
     protected void showSnackbar(View v,String description,String msg){
 
-            snackbar =  Snackbar.make(v, description,Snackbar.LENGTH_LONG)
-                    .setAction("Undo", new View.OnClickListener(){
-                        @Override
-                        public void onClick(View v) {
-                        }
-                    });
+        snackbar =  Snackbar.make(v, description,Snackbar.LENGTH_LONG)
+                .setAction("Undo", new View.OnClickListener(){
+                    @Override
+                    public void onClick(View v) {
+                    }
+                });
         snackbar.show();
     }
 
-
-
-
-
-
+    protected  View bindView( Activity activity , int parentId,int id){
+        View view = activity.findViewById(parentId).findViewById(id);
+        return view;
+    }
 
 
 

@@ -12,10 +12,19 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 
+import com.google.gson.Gson;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.trust.shengyu.calltaxidriver.Config;
 import com.trust.shengyu.calltaxidriver.R;
 import com.trust.shengyu.calltaxidriver.activitys.registerandlogin.LoginActivity;
+import com.trust.shengyu.calltaxidriver.db.DBManager;
+import com.trust.shengyu.calltaxidriver.db.DbHelper;
+import com.trust.shengyu.calltaxidriver.mqtt.MqttCommHelper;
+import com.trust.shengyu.calltaxidriver.mqtt.network.CallTaxiCommHelper;
+import com.trust.shengyu.calltaxidriver.tools.L;
+import com.trust.shengyu.calltaxidriver.tools.beans.Bean;
+import com.trust.shengyu.calltaxidriver.tools.beans.MqttResultBean;
+import com.trust.shengyu.calltaxidriver.tools.beans.OrderBean;
 import com.trust.shengyu.calltaxidriver.tools.dialog.TrustDialog;
 import com.trust.shengyu.calltaxidriver.tools.gps.DrawLiner;
 import com.trust.shengyu.calltaxidriver.tools.gps.Positioning;
@@ -30,15 +39,19 @@ import io.reactivex.functions.Consumer;
 /**
  * Created by Trust on 2017/5/10.
  */
-public class BaseActivity extends AppCompatActivity {
+public abstract class BaseActivity extends AppCompatActivity {
 //    protected MainActivity mainActivity ;
     private Context context = BaseActivity.this;
     private Toast toast;
     protected TrustDialog trustDialog;
     protected Positioning positioning;
-    protected  Activity mActivity;
+    protected Activity mActivity;
     protected DrawLiner drawLiner;
-
+    protected Gson gson;
+    protected DbHelper dbHelper;
+    protected DBManager dbManager;
+    protected static CallTaxiCommHelper callTaxiCommHelper;
+    public static boolean mqttConnectionStatus = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,10 +63,23 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void initPush() {
+        dbHelper = new DbHelper(context);
+        dbManager = new DBManager(context);
+        dbManager.selectAllData();
+    }
+
+    public static void asdasdasdad(){
 
     }
 
     private void init() {
+        L.d("base Activity");
+        if (callTaxiCommHelper == null) {
+            callTaxiCommHelper = new CallTaxiCommHelper(context);
+            callTaxiCommHelper.doClientConnection();
+        }
+
+        gson = new Gson();
         drawLiner = new DrawLiner(context);
         positioning = new Positioning();
         trustDialog = new TrustDialog();
@@ -66,23 +92,83 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     //------------------------自定义--------------------------------------------
+    //dialog 点击回调
     protected void getOrderDialogResult(String startName, String endName, int taxiCast){
 
     }
+    //mqtt 收到push 回调
+    protected   MqttCommHelper.onMqttCallBackResultListener onMqttCallBackResultListener = new MqttCommHelper.onMqttCallBackResultListener() {
+        @Override
+        public void CallBack(String topic, final Object msg) {
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    L.d("msg:"+msg.toString());
+                    //此时已在主线程中，可以更新UI了
+                    MqttResultBean bean =  gson.fromJson(msg.toString(), MqttResultBean.class);
+
+                    if (bean.getStatus()){
+                        switch (bean.getType()){
+                            case Config.MQTT_TYPE_PLACE_AN_ORDER:
+                                OrderBean orderBean = gson.fromJson(msg.toString(), OrderBean.class);
+                                resultMqttTypePlaceAnOrder(orderBean);
+                                break;
+                            case Config.MQTT_TYPE_START_ORDER:
+                                resultMqttTypeStartOrder(bean);
+                                break;
+                            case Config.MQTT_TYPE_END_ORDER:
+                                resultMqttTypeEndOrder(bean);
+                                break;
+                            case Config.MQTT_TYPE_REFUSED_ORDER:
+                                resultMqttTypeRefusedOrder(bean);
+                                break;
+                            default:
+                                resultMqttTypeOther(bean);
+                                break;
+                        }
+                    }else{
+//                        resultErrorMqtt("false:"+bean.getErrorMsg());
+                    }
+                }
+            });
+        }
+    };
 
 
+    private void resultErrorMqtt(String msg){
+        showToast(msg);
+    }
 
+    //下订单回调
+    protected  void resultMqttTypePlaceAnOrder(Bean bean){
+        L.d("resultMqttTypePlaceAnOrder");
+    };
+    //开始订单回调
+    public  void resultMqttTypeStartOrder(MqttResultBean bean){};
+    //结束订单回调
+    public  void resultMqttTypeEndOrder(MqttResultBean bean){};
+    //拒绝订单回调
+    public  void resultMqttTypeRefusedOrder(MqttResultBean bean){};
+    //未知消息回调
+    public  void resultMqttTypeOther(Bean bean){
+    };
 
+    public void sendMqttMessage(String msg){
+        callTaxiCommHelper.publish(Config.sendTopic,1,msg);
+    }
 
+    protected void sendMqttMessage(String topic ,int qos , String msg){
+        if(mqttConnectionStatus){
+            callTaxiCommHelper.publish(topic,qos,msg);
+        }else{
+            showToast("网络异常,请稍后重试!");
+        }
+    }
 
-
-
-
-
-
-
-
-
+    protected void Test(){
+        L.d("Test");
+    }
 
 
 

@@ -46,8 +46,7 @@ public class LoginActivity extends BaseActivity {
         ButterKnife.bind(this);
         initView();
         initDate();
-        CallTaxiCommHelper callTaxiCommHelper = new CallTaxiCommHelper(context);
-        callTaxiCommHelper.doClientConnection();
+
 //        callTaxiCommHelper.publish("trust",1,"发送msg");
         /*
         callTaxiCommHelper.unbundledTopics("trust");
@@ -65,6 +64,7 @@ public class LoginActivity extends BaseActivity {
     }
 
 
+
     private void initView() {
         baseSetOnClick(loginSubmit);
         baseSetOnClick(loginForgetpassword);
@@ -76,12 +76,13 @@ public class LoginActivity extends BaseActivity {
         Intent intent = new Intent();
         switch (v.getId()){
             case R.id.login_submit:
+
                 String user = baseCheckIsNull(loginUser, "账号错误!");
                 if (user != null) {
                     String pwd = baseCheckIsNull(loginPwd, "密码错误!");
                     if (pwd != null) {
 //                showSnackbar(loginSubmit,"说明",null);
-                        intent.setClass(context,OrderHistoryActivity.class);
+                        intent.setClass(context,MainMapActivity.class);
                     }
                 }
                 break;
@@ -94,12 +95,12 @@ public class LoginActivity extends BaseActivity {
                 break;
         }
         startActivity(intent);
-        requestCallBeack("https://www.baidu.com/s?wd=%E9%AB%98%E5%BE%B7%E5%9C%B0%E5%9B%BE&rsv_spt=1&rsv_iqid=0xc8842b5800001ad0&issp=1&f=8&rsv_bp=0&rsv_idx=2&ie=utf-8&tn=baiduhome_pg&rsv_enter=1&rsv_sug3=12&rsv_sug1=7&rsv_sug7=101&rsv_sug2=0&inputT=1576&rsv_sug4=3039&rsv_sug=1",
-                null ,1,trustRequest.GET,trustRequest.HeaderNull,trustRequest.TokenNull);
+//        requestCallBeack("https://www.baidu.com/s?wd=%E9%AB%98%E5%BE%B7%E5%9C%B0%E5%9B%BE&rsv_spt=1&rsv_iqid=0xc8842b5800001ad0&issp=1&f=8&rsv_bp=0&rsv_idx=2&ie=utf-8&tn=baiduhome_pg&rsv_enter=1&rsv_sug3=12&rsv_sug1=7&rsv_sug7=101&rsv_sug2=0&inputT=1576&rsv_sug4=3039&rsv_sug=1",
+//                null ,1,trustRequest.GET,trustRequest.HeaderNull,trustRequest.TokenNull);
         Map<String,Object> map = new WeakHashMap<>();
         map.put("driverId","1180");
         map.put("imsi","020742686600");
-        requestCallBeack("http://180.168.194.98:7888/CAWebserver-0.1/registry/reg",map,2,trustRequest.POST,trustRequest.HeaderUrlencoded,trustRequest.TokenNull);
+//        requestCallBeack("http://180.168.194.98:7888/CAWebserver-0.1/registry/reg",map,2,trustRequest.POST,trustRequest.HeaderUrlencoded,trustRequest.TokenNull);
     }
 
 
