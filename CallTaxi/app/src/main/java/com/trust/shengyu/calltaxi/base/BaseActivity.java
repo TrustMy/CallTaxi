@@ -63,7 +63,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     public static boolean mqttConnectionStatus = false;
     protected static CallTaxiCommHelper callTaxiCommHelper;
 
-    protected TrustServer mqttServer;
+    protected static TrustServer mqttServer;
 
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -106,10 +106,12 @@ public abstract class BaseActivity extends AppCompatActivity {
         TrustServer.baseActivity = this;
 
         L.d("base Activity");
+        /*
         if (callTaxiCommHelper == null) {
             callTaxiCommHelper = new CallTaxiCommHelper(context);
             callTaxiCommHelper.doClientConnection();
         }
+        */
 
         gson = new Gson();
         drawLiner = new DrawLiner(context);
@@ -178,18 +180,18 @@ public abstract class BaseActivity extends AppCompatActivity {
         L.d("resultMqttTypePlaceAnOrder");
     };
     //开始订单回调
-    public  void resultMqttTypeStartOrder(MqttResultBean bean){};
+    public  void resultMqttTypeStartOrder(MqttResultBean bean){L.d("resultMqttTypeStartOrder");};
     //结束订单回调
-    public  void resultMqttTypeEndOrder(MqttResultBean bean){};
+    public  void resultMqttTypeEndOrder(MqttResultBean bean){L.d("resultMqttTypeEndOrder");};
     //拒绝订单回调
-    public  void resultMqttTypeRefusedOrder(MqttResultBean bean){};
+    public  void resultMqttTypeRefusedOrder(MqttResultBean bean){L.d("resultMqttTypeRefusedOrder");};
     //未知消息回调
     public  void resultMqttTypeOther(MqttResultBean bean){};
 
     public void sendMqttMessage(String topic ,int qos , String msg){
         if(mqttConnectionStatus){
             showDialog(mActivity,"1","2",1);
-            callTaxiCommHelper.publish(topic,qos,msg);
+            mqttServer.sendMqttMsg(topic,qos,msg);
         }else{
             showToast("网络异常,请稍后重试!");
 

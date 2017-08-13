@@ -52,11 +52,7 @@
                             android:layout_height="wrap_content"
                             android:orientation="horizontal">
 
-                                <Button
-                                    android:text="取消订单"
-                                    android:id="@+id/map_order_end"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content" />
+
 
                         </LinearLayout>
 

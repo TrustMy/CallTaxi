@@ -59,8 +59,7 @@ import butterknife.ButterKnife;
 
 public class MainMapActivity extends BaseActivity implements Positioning.PositioningListener {
 
-    @BindView(R.id.map_order_end)
-    Button mapOrderEnd;
+
     @BindView(R.id.clear)
     Button clear;
     @BindView(R.id.main_map_start_tv)
@@ -120,7 +119,9 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
         mapView.onCreate(savedInstanceState);// 此方法必须重写
         initMap();
         initView();
-
+        if(mqttServer.resultOrderTaskQueue()){
+            startActivity(new Intent(context,OrderStatusActivity.class));
+        }
     }
 
     private void initMap() {
@@ -162,13 +163,13 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
         }
 
 
-        callTaxiCommHelper.setOnMqttCallBackResultListener(onMqttCallBackResultListener);
+//        callTaxiCommHelper.setOnMqttCallBackResultListener(onMqttCallBackResultListener);
 
         positioning.setPostitioningListener(this);
         positioning.startGps();
 
 
-        baseSetOnClick(mapOrderEnd);
+
         baseSetOnClick(clear);
 
         baseSetOnClick(mainDrawerlayoutBlack);
@@ -214,16 +215,6 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
 
         switch (v.getId()) {
 
-            case R.id.map_order_end:
-
-                maps.put("msg", "我不想坐车了!");
-
-                map.put("status", true);
-                map.put("time", TrustTools.getSystemTimeString());
-                map.put("type", Config.MQTT_TYPE_REFUSED_ORDER);
-                map.put("msg", maps);
-                sendMqttMessage(Config.sendTopic, 1, new JSONObject(map).toString());
-                break;
 
 
             case R.id.clear:
@@ -253,7 +244,7 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
                 map.put("time", TrustTools.getSystemTimeString());
                 sendMqttMessage(Config.sendTopic, 1, new JSONObject(map).toString());
 
-
+                startActivity(new Intent(context,OrderStatusActivity.class));
                 break;
         }
     }
@@ -508,26 +499,7 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
 
     }
 
-    @Override
-    public void resultMqttTypeStartOrder(MqttResultBean bean) {
-        showSnackbar(mainMapStartTv, "已经上车!", null);
-    }
 
-    @Override
-    public void resultMqttTypeEndOrder(MqttResultBean bean) {
-        showSnackbar(mainMapStartTv, "已经下车", null);
-    }
-
-    @Override
-    public void resultMqttTypeRefusedOrder(MqttResultBean bean) {
-        showSnackbar(mainMapStartTv, "司机拒绝:" + bean.getMsg(), null);
-    }
-
-    @Override
-    public void resultMqttTypePlaceAnOrder(Bean bean) {
-        showSnackbar(mainMapStartTv, "司机接单了,马上跳转页面", null);
-        startActivity(new Intent(context, OrderStatusActivity.class));
-    }
 
 
     @Override
