@@ -97,12 +97,11 @@ public abstract class BaseActivity extends AppCompatActivity {
             bindService(new Intent(context,TrustServer.class),serviceConnection, Context.BIND_AUTO_CREATE);
         }
 
-
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void init() {
-        StatusBar.setColor(Config.activity, Color.parseColor("#6ED18E"));
+//        StatusBar.setColor(Config.activity, Color.parseColor("#6ED18E"));
         TrustServer.baseActivity = this;
 
         L.d("base Activity");

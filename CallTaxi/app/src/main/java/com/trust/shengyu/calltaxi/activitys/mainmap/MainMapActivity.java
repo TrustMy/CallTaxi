@@ -117,6 +117,7 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
         ButterKnife.bind(this);
         mapView = (MapView) bindView(this, R.id.mainmap_map, R.id.base_map);
         mapView.onCreate(savedInstanceState);// 此方法必须重写
+
         initMap();
         initView();
         if(mqttServer.resultOrderTaskQueue()){
@@ -214,8 +215,6 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
         Map<String, Object> maps = new WeakHashMap<>();
 
         switch (v.getId()) {
-
-
 
             case R.id.clear:
                 dbManager.deleteAll();

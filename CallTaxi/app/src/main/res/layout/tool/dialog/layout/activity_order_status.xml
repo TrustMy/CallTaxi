@@ -7,16 +7,202 @@
     android:orientation="vertical"
     tools:context="com.trust.shengyu.calltaxi.activitys.orderstatus.OrderStatusActivity">
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/main_map_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorStatusBarBg">
 
-    <TextView
-        android:id="@+id/tttttttttt"
-        android:text="orderStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <TextView
+            android:gravity="center"
+            android:textColor="@color/colorWhite"
+            android:text="订单状态"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </android.support.v7.widget.Toolbar>
 
-    <Button
-        android:text="取消订单"
-        android:id="@+id/map_order_end"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <include layout="@layout/map_layout"
+            android:id="@+id/order_status_map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </include>
+
+        <LinearLayout
+            android:layout_marginLeft="@dimen/x6"
+            android:layout_marginRight="@dimen/x6"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <android.support.v7.widget.CardView
+                android:visibility="gone"
+                android:id="@+id/order_status_driver_msg_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/y60"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_marginLeft="@dimen/x20"
+                        android:background="@mipmap/user_log"
+                        android:layout_width="@dimen/x60"
+                        android:layout_height="@dimen/y40" />
+
+
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/order_status_driver_name"
+                                android:text="司机名称"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+
+                            <ImageView
+                                android:src="@drawable/ic_boy"
+                                android:id="@+id/order_status_sex"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:src="@mipmap/car"
+                                android:id="@+id/order_status_driver_car"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+
+
+                            <TextView
+                                android:id="@+id/order_status_driver_car_type"
+                                android:text="车辆类型"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+
+                            <TextView
+                                android:text="车牌号"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+
+
+
+                            <TextView
+                                android:id="@+id/order_status_driver_car_number_plate"
+                                android:text="沪xxxxxx"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+
+
+                            <Button
+                                android:text="取消订单"
+                                android:id="@+id/map_order_cancel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </android.support.v7.widget.CardView>
+
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/order_status_end"
+                android:visibility="gone"
+                android:layout_marginTop="@dimen/y2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/y60"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+
+                        android:layout_marginLeft="@dimen/x10"
+                        app:srcCompat="@drawable/ic_cost"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center">
+
+                        <TextView
+                            android:gravity="center_vertical"
+                            android:layout_marginLeft="@dimen/x10"
+                            android:text="约"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent" />
+
+                        <TextView
+                            android:id="@+id/main_order_cost"
+                            android:textColor="@color/colorStatusBarBg"
+                            android:textSize="@dimen/y14"
+                            android:gravity="center_vertical"
+                            android:layout_marginLeft="@dimen/x10"
+                            android:text="30.2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent" />
+
+                        <TextView
+                            android:gravity="center_vertical"
+                            android:layout_marginLeft="@dimen/x10"
+                            android:text="元"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent" />
+
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/order_status_submit"
+                        android:text="支付"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+            </android.support.v7.widget.CardView>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
 </LinearLayout>

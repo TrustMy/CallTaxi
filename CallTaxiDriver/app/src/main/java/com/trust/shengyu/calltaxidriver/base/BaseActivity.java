@@ -298,6 +298,10 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
 
+    protected  View bindView( Activity activity , int parentId,int id){
+        View view = activity.findViewById(parentId).findViewById(id);
+        return view;
+    }
 
 
 

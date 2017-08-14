@@ -14,7 +14,7 @@ import com.trust.shengyu.calltaxi.R;
  */
 
 public class TrustDialog {
-
+    //订单信息
     public Dialog showOrderDialog(Activity activity , final String startName , final String endName , final int money){
         final Dialog dialog = new Dialog(activity, R.style.customDialog);
 
@@ -61,6 +61,29 @@ public class TrustDialog {
 
     public void dissDialog(Dialog dialog){
         dialog.dismiss();
+    }
+
+
+    //请求失败 dialog
+
+    public Dialog showErrorOrderDialog(final Activity activity , String msg){
+        final Dialog dialog = new Dialog(activity, R.style.customDialog);
+        View view = LayoutInflater.from(activity).inflate(R.layout.error_order_dialog_layout,null);
+        Button determineBtn = (Button) view.findViewById(R.id.error_order_dialog_determine);
+        determineBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+                activity.finish();
+            }
+        });
+        dialog.setContentView(view);
+        dialog.setCanceledOnTouchOutside(false);// 设置点击屏幕Dialog不消失
+        if(!activity.isFinishing()){
+            dialog.show();
+        }
+
+        return dialog;
     }
 
 }
