@@ -41,6 +41,7 @@
 
 
             <TextView
+                android:id="@+id/error_order_dialog_msg"
                 android:textColor="#E3b343"
                 android:text="回家吃饭"
                 android:layout_width="wrap_content"

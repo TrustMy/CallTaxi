@@ -40,7 +40,7 @@ public class OrderBean extends Bean {
         return type;
     }
 
-    public static class MsgBean {
+    public static class MsgBean extends Bean{
         /**
          * taxiCast : 14
          * startName : 上海市普陀区顺义路10号靠近普陀长风开业园区

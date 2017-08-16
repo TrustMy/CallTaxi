@@ -118,7 +118,6 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
     }
 
     private void initView() {
-        callTaxiCommHelper.setOnMqttCallBackResultListener(onMqttCallBackResultListener);//需要监听mqtt的状态
 
         positioning.setPostitioningListener(this);
         positioning.startGps();
@@ -370,7 +369,7 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
         Map<String, Object> map = new WeakHashMap<>();
         map.put("status", true);
         map.put("type", Config.MQTT_TYPE_PLACE_AN_ORDER);
-        callTaxiCommHelper.publish(Config.sendTopic, 1, new JSONObject(map).toString());
+//        callTaxiCommHelper.publish(Config.sendTopic, 1, new JSONObject(map).toString());
     }
 
     int num;

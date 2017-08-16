@@ -47,11 +47,7 @@ public class LoginActivity extends BaseActivity {
         initView();
         initDate();
 
-//        callTaxiCommHelper.publish("trust",1,"发送msg");
-        /*
-        callTaxiCommHelper.unbundledTopics("trust");
-        callTaxiCommHelper.publish("trust",1,"解绑后msg");
-        */
+        trustDialog.showWaitDialog(this);
 
     }
 
@@ -94,12 +90,17 @@ public class LoginActivity extends BaseActivity {
                 intent.setClass(context,ResetPasswordActivity.class);
                 break;
         }
+
+        Map<String,Object> map = new WeakHashMap<>();
+        map.put("cp","13892929789");
+        map.put("pw","11111111111");
+        requestCallBeack("http://139.196.229.233:8080/EBWebServer-2.0/rest/user/login/",
+                map,2,false);
+
         startActivity(intent);
 //        requestCallBeack("https://www.baidu.com/s?wd=%E9%AB%98%E5%BE%B7%E5%9C%B0%E5%9B%BE&rsv_spt=1&rsv_iqid=0xc8842b5800001ad0&issp=1&f=8&rsv_bp=0&rsv_idx=2&ie=utf-8&tn=baiduhome_pg&rsv_enter=1&rsv_sug3=12&rsv_sug1=7&rsv_sug7=101&rsv_sug2=0&inputT=1576&rsv_sug4=3039&rsv_sug=1",
 //                null ,1,trustRequest.GET,trustRequest.HeaderNull,trustRequest.TokenNull);
-        Map<String,Object> map = new WeakHashMap<>();
-        map.put("driverId","1180");
-        map.put("imsi","020742686600");
+
 //        requestCallBeack("http://180.168.194.98:7888/CAWebserver-0.1/registry/reg",map,2,trustRequest.POST,trustRequest.HeaderUrlencoded,trustRequest.TokenNull);
     }
 

@@ -7,8 +7,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.LOCATION_HARDWARE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -21,19 +20,20 @@
             android:name="com.amap.api.v2.apikey"
             android:value="ec9d16eddd57f3a516c008201d05dc0f" />
 
-        <activity android:name="com.trust.shengyu.calltaxidriver.activitys.MainActivity" >
+        <activity android:name=".activitys.MainActivity">
+
+        </activity>
+        >
+        <activity android:name=".activitys.registerandlogin.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>>
-        <activity android:name="com.trust.shengyu.calltaxidriver.activitys.registerandlogin.LoginActivity">
-
         </activity>
-        <activity android:name="com.trust.shengyu.calltaxidriver.activitys.mainmap.MainMapActivity" />
+        <activity android:name=".activitys.mainmap.MainMapActivity" />
 
-        <receiver android:name="com.trust.shengyu.calltaxidriver.activitys.wifiBrodCast">
+        <receiver android:name=".activitys.wifiBrodCast">
             <intent-filter>
                 <action android:name="android.NET.wifi.RSSI_CHANGED" />
                 <action android:name="android.net.wifi.STATE_CHANGE" />
@@ -43,9 +43,12 @@
 
         <!-- Mqtt Service -->
         <service android:name="org.eclipse.paho.android.service.MqttService" />
+        <service android:name=".mqtt.TrustServer" />
 
-        <activity android:name="com.trust.shengyu.calltaxidriver.activitys.WifiActivity"></activity>
-        <activity android:name="com.trust.shengyu.calltaxidriver.activitys.orderhistory.OrderHistoryActivity"></activity>
+        <activity android:name=".activitys.WifiActivity" />
+        <activity android:name=".activitys.orderhistory.OrderHistoryActivity" />
+        <activity android:name=".activitys.orderstatus.OrderStatusActivity"></activity>
+        <activity android:name=".activitys.registerandlogin.RegisteredActivity"/>
     </application>
 
 </manifest>

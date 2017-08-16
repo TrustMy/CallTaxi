@@ -38,7 +38,7 @@ public class TrustRequest {
 
     public onResultCallBack resultCallBack;
 
-    public TrustRequest() {
+    public TrustRequest(onResultCallBack resultCallBack) {
         this.okHttpClient = new OkHttpClient.Builder()
                 .sslSocketFactory(TrustAllCerts.createSSLSocketFactory(),new TrustAllCerts())
                 .hostnameVerifier(new TrustAllCerts.TrustAllHostnameVerifier())
@@ -46,6 +46,7 @@ public class TrustRequest {
                 .readTimeout(15, TimeUnit.SECONDS)
                 .build();
         builder = new Request.Builder();
+        this.resultCallBack = resultCallBack;
     }
 
     /**

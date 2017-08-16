@@ -93,7 +93,6 @@ public class OrderStatusActivity extends BaseActivity {
         L.e("司机拒绝接单");
         showSnackbar(mapOrderCancel, "司机拒绝:" + bean.getMsg(), null);
         trustDialog.showErrorOrderDialog(this,bean.getMsg());
-
     }
 
     @Override

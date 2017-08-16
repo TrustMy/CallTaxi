@@ -1,9 +1,12 @@
 package com.trust.shengyu.calltaxidriver.base;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -20,6 +23,7 @@ import com.trust.shengyu.calltaxidriver.activitys.registerandlogin.LoginActivity
 import com.trust.shengyu.calltaxidriver.db.DBManager;
 import com.trust.shengyu.calltaxidriver.db.DbHelper;
 import com.trust.shengyu.calltaxidriver.mqtt.MqttCommHelper;
+import com.trust.shengyu.calltaxidriver.mqtt.TrustServer;
 import com.trust.shengyu.calltaxidriver.mqtt.network.CallTaxiCommHelper;
 import com.trust.shengyu.calltaxidriver.tools.L;
 import com.trust.shengyu.calltaxidriver.tools.beans.Bean;
@@ -50,8 +54,20 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected Gson gson;
     protected DbHelper dbHelper;
     protected DBManager dbManager;
-    protected static CallTaxiCommHelper callTaxiCommHelper;
+
     public static boolean mqttConnectionStatus = false;
+    protected static TrustServer mqttServer;
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            mqttServer = ((TrustServer.TrustBinder)iBinder).getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mqttServer = null;
+        }
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,21 +79,19 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     private void initPush() {
+        if(mqttServer == null){
+            bindService(new Intent(context,TrustServer.class),serviceConnection, Context.BIND_AUTO_CREATE);
+        }
         dbHelper = new DbHelper(context);
         dbManager = new DBManager(context);
         dbManager.selectAllData();
     }
 
-    public static void asdasdasdad(){
 
-    }
 
     private void init() {
         L.d("base Activity");
-        if (callTaxiCommHelper == null) {
-            callTaxiCommHelper = new CallTaxiCommHelper(context);
-            callTaxiCommHelper.doClientConnection();
-        }
+
 
         gson = new Gson();
         drawLiner = new DrawLiner(context);
@@ -141,7 +155,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     //下订单回调
-    protected  void resultMqttTypePlaceAnOrder(Bean bean){
+    public  void resultMqttTypePlaceAnOrder(Bean bean){
         L.d("resultMqttTypePlaceAnOrder");
     };
     //开始订单回调
@@ -154,25 +168,15 @@ public abstract class BaseActivity extends AppCompatActivity {
     public  void resultMqttTypeOther(Bean bean){
     };
 
-    public void sendMqttMessage(String msg){
-        callTaxiCommHelper.publish(Config.sendTopic,1,msg);
-    }
+
 
     protected void sendMqttMessage(String topic ,int qos , String msg){
         if(mqttConnectionStatus){
-            callTaxiCommHelper.publish(topic,qos,msg);
+            mqttServer.sendMqttMsg(topic,qos,msg);
         }else{
             showToast("网络异常,请稍后重试!");
         }
     }
-
-    protected void Test(){
-        L.d("Test");
-    }
-
-
-
-
 
 
     //-------------------------基础配置-------------------------------------------------------------------

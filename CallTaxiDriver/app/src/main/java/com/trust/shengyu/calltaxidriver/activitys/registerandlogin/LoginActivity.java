@@ -2,26 +2,25 @@ package com.trust.shengyu.calltaxidriver.activitys.registerandlogin;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
-import com.trust.shengyu.calltaxidriver.activitys.mainmap.MainMapActivity;
-import com.trust.shengyu.calltaxidriver.base.BaseActivity;
 import com.trust.shengyu.calltaxidriver.R;
-import com.trust.shengyu.calltaxidriver.mqtt.network.CallTaxiCommHelper;
-import com.trust.shengyu.calltaxidriver.tools.L;
-import com.trust.shengyu.calltaxidriver.tools.beans.Bean;
-
-import java.util.List;
+import com.trust.shengyu.calltaxidriver.activitys.MainActivity;
+import com.trust.shengyu.calltaxidriver.base.BaseActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class LoginActivity extends BaseActivity {
+    @BindView(R.id.login_forgetpassword)
+    TextView loginForgetpassword;
+    @BindView(R.id.login_registered)
+    LinearLayout loginRegistered;
     private Context context = LoginActivity.this;
 
     @BindView(R.id.login_user)
@@ -38,14 +37,14 @@ public class LoginActivity extends BaseActivity {
         ButterKnife.bind(this);
         initView();
         initDate();
-
 //        callTaxiCommHelper.publish("trust",1,"发送msg");
         /*
         callTaxiCommHelper.unbundledTopics("trust");
         callTaxiCommHelper.publish("trust",1,"解绑后msg");
         */
-    }
 
+        trustDialog.showWaitDialog(this);
+    }
 
 
     private void initDate() {
@@ -59,21 +58,36 @@ public class LoginActivity extends BaseActivity {
 
     private void initView() {
         baseSetOnClick(loginSubmit);
+        baseSetOnClick(loginForgetpassword);
+        baseSetOnClick(loginRegistered);
     }
 
     @Override
     public void baseClickResult(View v) {
-        String user = baseCheckIsNull(loginUser,"账号错误!");
-        if (user != null) {
-            String pwd = baseCheckIsNull(loginPwd,"密码错误!");
-            if (pwd != null) {
+        Intent intent = new Intent();
+        switch (v.getId()) {
+            case R.id.login_submit:
+                String user = baseCheckIsNull(loginUser, "账号错误!");
+                if (user != null) {
+                    String pwd = baseCheckIsNull(loginPwd, "密码错误!");
+                    if (pwd != null) {
 //                showSnackbar(loginSubmit,"说明",null);
-                startActivity(new Intent(context,MainMapActivity.class));
-                finish();
-            }
-        }
-    }
+                        intent.setClass(context, MainActivity.class);
+//                        finish();
+                    }
+                }
+                break;
+            case R.id.login_forgetpassword:
 
+                break;
+            case R.id.login_registered:
+                intent.setClass(context,RegisteredActivity.class);
+                break;
+        }
+        startActivity(intent);
+
+
+    }
 
 
 }

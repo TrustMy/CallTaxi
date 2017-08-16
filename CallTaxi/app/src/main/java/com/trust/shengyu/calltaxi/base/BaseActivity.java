@@ -37,6 +37,7 @@ import com.trust.shengyu.calltaxi.tools.beans.MqttResultBean;
 import com.trust.shengyu.calltaxi.tools.dialog.TrustDialog;
 import com.trust.shengyu.calltaxi.tools.gps.DrawLiner;
 import com.trust.shengyu.calltaxi.tools.gps.Positioning;
+import com.trust.shengyu.calltaxi.tools.request.TrustRequest;
 
 
 import java.util.Map;
@@ -61,10 +62,10 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected DbHelper dbHelper;
     protected DBManager dbManager;
     public static boolean mqttConnectionStatus = false;
-    protected static CallTaxiCommHelper callTaxiCommHelper;
+
 
     protected static TrustServer mqttServer;
-
+    protected TrustRequest trustRequest;
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -111,7 +112,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             callTaxiCommHelper.doClientConnection();
         }
         */
-
+        trustRequest = new TrustRequest(resultCallBack);
         gson = new Gson();
         drawLiner = new DrawLiner(context);
         positioning = new Positioning();
@@ -198,7 +199,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     public void sendMqttMessage(String msg){
-        callTaxiCommHelper.publish(Config.sendTopic,1,msg);
+
     }
 
 
@@ -207,8 +208,15 @@ public abstract class BaseActivity extends AppCompatActivity {
     //-------------------------基础配置-------------------------------------------------------------------
 
     public void requestCallBeack(String url, Map<String,Object> map,int type,boolean isNeed){
-
+        trustRequest.Request(url,map,type,trustRequest.POST,trustRequest.HeaderJson,null);
     }
+
+    private TrustRequest.onResultCallBack resultCallBack = new TrustRequest.onResultCallBack() {
+        @Override
+        public void CallBack(int code, int status, Object object) {
+            resultCallBeack(object,code,status);
+        }
+    };
 
     //网络请求回调
 

@@ -8,4 +8,8 @@
     <color name="colorStatusBarBg">#6ED18E</color>
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorBlack">#000000</color>
+
+    <color name="colorIcBg">#2ddaa6</color>
+
+    <color name="colorLinerBg">#c4c4c4</color>
 </resources>

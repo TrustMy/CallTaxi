@@ -32,4 +32,12 @@
         <item name="android:backgroundDimEnabled">true</item>
     </style>
 
+
+
+    <style name="IndentationAbout">
+        <item name="android:layout_marginRight">@dimen/x35</item>
+        <item name="android:layout_marginLeft">@dimen/x35</item>
+
+    </style>
+
 </resources>
