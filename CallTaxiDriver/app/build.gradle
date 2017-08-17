@@ -67,4 +67,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     apt 'com.jakewharton:butterknife-compiler:8.0.1'
     compile 'com.airbnb.android:lottie:2.1.0'
+    compile 'com.squareup.okhttp3:okhttp:3.8.1'
 }

@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.trust.shengyu.calltaxi.Config;
 import com.trust.shengyu.calltaxi.R;
+import com.trust.shengyu.calltaxi.activitys.orderstatus.OrderStatusActivity;
 import com.trust.shengyu.calltaxi.activitys.registerandlogin.LoginActivity;
 import com.trust.shengyu.calltaxi.db.DBManager;
 import com.trust.shengyu.calltaxi.db.DbHelper;
@@ -112,7 +113,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             callTaxiCommHelper.doClientConnection();
         }
         */
-        trustRequest = new TrustRequest(resultCallBack);
+        trustRequest = new TrustRequest(resultCallBack , Config.SERVER_URL);
         gson = new Gson();
         drawLiner = new DrawLiner(context);
         positioning = new Positioning();
@@ -161,7 +162,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                                 break;
                         }
 
-                        dissDialog();
+
                     }else{
 //                        resultErrorMqtt("false:"+bean.getErrorMsg());
                     }
@@ -187,28 +188,38 @@ public abstract class BaseActivity extends AppCompatActivity {
     public  void resultMqttTypeRefusedOrder(MqttResultBean bean){L.d("resultMqttTypeRefusedOrder");};
     //未知消息回调
     public  void resultMqttTypeOther(MqttResultBean bean){};
-
+    //发送mqtt消息
     public void sendMqttMessage(String topic ,int qos , String msg){
         if(mqttConnectionStatus){
-            showDialog(mActivity,"1","2",1);
+
             mqttServer.sendMqttMsg(topic,qos,msg);
         }else{
-            showToast("网络异常,请稍后重试!");
-
+//            showToast("网络异常,请稍后重试!");
+            L.e("网络异常,请重试!");
         }
     }
 
-    public void sendMqttMessage(String msg){
-
+    /**
+     * 检查返回结果
+     * @param status
+     * @param msg
+     * @return
+     */
+    protected boolean getResultStatus(int status , String msg){
+        if (status == 1) {//成功
+            return true;
+        }else{
+            L.e("error message :"+msg);
+            return false;
+        }
     }
-
 
 
 
     //-------------------------基础配置-------------------------------------------------------------------
 
-    public void requestCallBeack(String url, Map<String,Object> map,int type,boolean isNeed){
-        trustRequest.Request(url,map,type,trustRequest.POST,trustRequest.HeaderJson,null);
+    public void requestCallBeack(String url, Map<String,Object> map,int type ,int requestType){
+        trustRequest.Request(url,map,type,requestType,trustRequest.HeaderJson,"Bearer V95iRBXYKLOdm3y/eqM0Vz05yYiP53r+T5oIoQ1B1M0=");
     }
 
     private TrustRequest.onResultCallBack resultCallBack = new TrustRequest.onResultCallBack() {
@@ -235,7 +246,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     public void errorCallBeack(Object bean,int type){
-
+        L.e("错误:"+bean.toString());
     }
 
     protected void  baseSetOnClick(final View v){

@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.trust.shengyu.calltaxi.R;
+import com.trust.shengyu.calltaxi.tools.TrustTools;
 
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 
@@ -65,7 +66,9 @@ public class TrustDialog {
     }
 
     public void dissDialog(Dialog dialog){
-        dialog.dismiss();
+        if (dialog != null) {
+            dialog.dismiss();
+        }
     }
 
 
@@ -94,10 +97,15 @@ public class TrustDialog {
     }
 
 
-
+    /**
+     * 等待dialog
+     * @param activity
+     * @return
+     */
     public Dialog showWaitDialog(Activity activity){
+        TrustTools trustTools = new TrustTools();
         final Dialog dialog = new Dialog(activity, R.style.customDialog);
-        View view = LayoutInflater.from(activity).inflate(R.layout.order_wait_dialog,null);
+        View view = LayoutInflater.from(activity).inflate(R.layout.wait_dialog,null);
         ImageView logo = (ImageView) view.findViewById(R.id.order_wait_img);
         Glide.with(activity).load(R.mipmap.wait_logo).
                 placeholder(R.mipmap.wait_log_one)
@@ -112,8 +120,33 @@ public class TrustDialog {
         dialog.setCanceledOnTouchOutside(false);// 设置点击屏幕Dialog不消失
         if(!activity.isFinishing()){
             dialog.show();
+            trustTools.setCountdown(15).setCountdownCallBack(new TrustTools.CountdownCallBack() {
+                @Override
+                public void callBackCountDown() {
+                    dialog.dismiss();
+                }
+            });
         }
         return dialog;
     }
+
+    public Dialog showOrderWaitDialog(Activity activity){
+        TrustTools trustTools = new TrustTools();
+        final Dialog dialog = new Dialog(activity, R.style.customDialog);
+        View view = LayoutInflater.from(activity).inflate(R.layout.order_wait_dialog,null);
+        dialog.setContentView(view);
+        dialog.setCanceledOnTouchOutside(false);// 设置点击屏幕Dialog不消失
+        if(!activity.isFinishing()){
+            dialog.show();
+            trustTools.setCountdown(120).setCountdownCallBack(new TrustTools.CountdownCallBack() {
+                @Override
+                public void callBackCountDown() {
+                    dialog.dismiss();
+                }
+            });
+        }
+        return dialog;
+    }
+
 
 }

@@ -4,10 +4,8 @@
     android:gravity="center_horizontal"
     android:layout_height="match_parent">
 
-   <TextView
-       android:text="等待司机接单"
-       android:textSize="64sp"
-       android:textColor="#ff5500"
+   <ImageView
+       android:id="@+id/order_wait_img"
        android:layout_width="wrap_content"
        android:layout_height="wrap_content" />
 

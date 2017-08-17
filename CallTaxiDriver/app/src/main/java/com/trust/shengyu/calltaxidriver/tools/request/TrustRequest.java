@@ -1,8 +1,10 @@
-package com.trust.shengyu.calltaxi.tools.request;
+package com.trust.shengyu.calltaxidriver.tools.request;
 
-import com.trust.shengyu.calltaxi.Config;
-import com.trust.shengyu.calltaxi.tools.L;
-import com.trust.shengyu.calltaxi.tools.request.ssl.TrustAllCerts;
+
+
+import com.trust.shengyu.calltaxidriver.Config;
+import com.trust.shengyu.calltaxidriver.tools.L;
+import com.trust.shengyu.calltaxidriver.tools.request.ssl.TrustAllCerts;
 
 import org.json.JSONObject;
 
@@ -19,6 +21,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+
 /**
  * Created by Trust on 2017/8/7.
  */
@@ -34,7 +37,7 @@ public class TrustRequest {
     private MediaType mediaType;
     private String serverUrl;
     public interface onResultCallBack{
-        void CallBack(int code , int status , Object object);
+        void CallBack(int code, int status, Object object);
     }
 
     public onResultCallBack resultCallBack;

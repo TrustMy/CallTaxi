@@ -42,6 +42,7 @@ import com.trust.shengyu.calltaxi.tools.L;
 import com.trust.shengyu.calltaxi.tools.TrustTools;
 import com.trust.shengyu.calltaxi.tools.beans.Bean;
 import com.trust.shengyu.calltaxi.tools.beans.MqttResultBean;
+import com.trust.shengyu.calltaxi.tools.beans.PlaceAnOrderBean;
 import com.trust.shengyu.calltaxi.tools.gps.ConversionLocation;
 import com.trust.shengyu.calltaxi.tools.gps.Maker;
 import com.trust.shengyu.calltaxi.tools.gps.Positioning;
@@ -109,7 +110,9 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
     private LatLonPoint mStartPoint, mEndPoint;
     private String startName, endName;
     private int taxiCast;
-
+    private LatLng startLatLng ,endLatLng;
+    private String orderNo;
+    private int orderStatus;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -144,10 +147,11 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
 
             @Override
             public void onCameraChangeFinish(CameraPosition postion) {
-                LatLng latLng = screenMarker.getPosition();
-                L.d("目标点:" + latLng.toString());
-                mEndPoint = new LatLonPoint(latLng.latitude, latLng.longitude);
-                conversionLocation.getAddress(new LatLonPoint(latLng.latitude, latLng.longitude));
+                endLatLng = screenMarker.getPosition();
+                L.d("目标点:" + endLatLng.toString());
+                mEndPoint = new LatLonPoint(endLatLng.latitude, endLatLng.longitude);
+
+                conversionLocation.getAddress(new LatLonPoint(endLatLng.latitude, endLatLng.longitude));
                 //屏幕中心的Marker跳动
 //                startJumpAnimation();
             }
@@ -211,8 +215,6 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
 
     @Override
     public void baseClickResult(View v) {
-        Map<String, Object> map = new WeakHashMap<>();
-        Map<String, Object> maps = new WeakHashMap<>();
 
         switch (v.getId()) {
 
@@ -233,17 +235,24 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
                 break;
 
             case R.id.main_map_order_submit_btn:
-                maps.put("startName", startName);
-                maps.put("endName", endName);
-                maps.put("taxiCast", taxiCast);
+                Map<String,Object> map = new WeakHashMap<>();
+                map.put("startAddress",startName);
+                map.put("endAddress",endName);
+                map.put("customer",Config.Customer);
+                map.put("startLat",startLatLng.latitude);
+                map.put("startLng",startLatLng.longitude);
+                map.put("endLat",endLatLng.latitude);
+                map.put("endLng",endLatLng.longitude);
+                map.put("estimateDuration",Config.OrderEstimateDuration);
+                map.put("estimatesAmount",taxiCast*0.1);
 
-                map.put("type", Config.MQTT_TYPE_PLACE_AN_ORDER);
-                map.put("status", true);
-                map.put("msg", maps);
-                map.put("time", TrustTools.getSystemTimeString());
-                sendMqttMessage(Config.sendTopic, 1, new JSONObject(map).toString());
+                requestCallBeack(Config.PLACE_AN_ORDER,map,Config.TAG_PLACE_AN_ORDER,trustRequest.POST);
 
-                startActivity(new Intent(context,OrderStatusActivity.class));
+
+
+
+//                startActivity(new Intent(context,OrderStatusActivity.class));
+
                 break;
         }
     }
@@ -427,6 +436,7 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
     @Override
     public void onLocationChanged(AMapLocation aMapLocation) {
         L.d("定位成功:" + aMapLocation.getLatitude() + "|" + aMapLocation.getLongitude());
+        startLatLng = new LatLng(aMapLocation.getLatitude(),aMapLocation.getLongitude());
         Maker.showMaker(aMap, new LatLng(aMapLocation.getLatitude(), aMapLocation.getLongitude()));
         mainMapStartTv.setText(aMapLocation.getAddress());
 
@@ -438,12 +448,7 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
         L.d("定位失败:" + aMapLocation.getErrorCode());
     }
 
-    @Override
-    protected void getOrderDialogResult(String startName, String endName, int taxiCast) {
-        L.d(startName + endName + taxiCast);
 
-
-    }
 
     int num;
     Handler handler = new Handler() {
@@ -517,5 +522,46 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
             mainMapOrderSubmitCardviewBtn.setVisibility(status);
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+
+    @Override
+    public void successCallBeack(Object obj, int type) {
+        String msg = (String) obj;
+        switch (type) {
+            case Config.MQTT_TYPE_PLACE_AN_ORDER:
+                PlaceAnOrderBean placeAnOrderBean = gson.fromJson(msg,PlaceAnOrderBean.class);
+                if(getResultStatus(placeAnOrderBean.getStatus(),msg)){
+                    orderNo = placeAnOrderBean.getContent().getOrderNo();
+                    orderStatus = placeAnOrderBean.getContent().getStatus();
+
+
+
+                    Map<String,Object>  test = new WeakHashMap<>();
+                    Map<String,Object>  ttttt = new WeakHashMap<>();
+
+
+                    test.put("startName", startName);
+                    test.put("endName", endName);
+                    test.put("taxiCast", taxiCast);
+                    test.put("orderNo", orderNo);
+
+                    ttttt.put("type", Config.MQTT_TYPE_PLACE_AN_ORDER);
+                    ttttt.put("status", true);
+                    ttttt.put("msg", test);
+                    ttttt.put("time", TrustTools.getSystemTimeString());
+                    sendMqttMessage(Config.sendTopic, 1, new JSONObject(ttttt).toString());
+
+
+                    L.d("下单成功:"+orderNo);
+                    Intent intent = new Intent(MainMapActivity.this,OrderStatusActivity.class);
+                    intent.putExtra("orderStatus",
+                            orderStatus);
+                    intent.putExtra("orderNo",
+                            orderNo);
+                    startActivity(intent);
+                }
+                break;
+        }
     }
 }

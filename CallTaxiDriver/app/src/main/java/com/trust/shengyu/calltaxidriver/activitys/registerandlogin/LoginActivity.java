@@ -43,7 +43,7 @@ public class LoginActivity extends BaseActivity {
         callTaxiCommHelper.publish("trust",1,"解绑后msg");
         */
 
-        trustDialog.showWaitDialog(this);
+//        trustDialog.showWaitDialog(this);
     }
 
 

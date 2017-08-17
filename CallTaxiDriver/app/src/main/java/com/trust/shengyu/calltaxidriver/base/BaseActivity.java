@@ -32,6 +32,7 @@ import com.trust.shengyu.calltaxidriver.tools.beans.OrderBean;
 import com.trust.shengyu.calltaxidriver.tools.dialog.TrustDialog;
 import com.trust.shengyu.calltaxidriver.tools.gps.DrawLiner;
 import com.trust.shengyu.calltaxidriver.tools.gps.Positioning;
+import com.trust.shengyu.calltaxidriver.tools.request.TrustRequest;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -54,7 +55,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected Gson gson;
     protected DbHelper dbHelper;
     protected DBManager dbManager;
-
+    protected TrustRequest trustRequest;
     public static boolean mqttConnectionStatus = false;
     protected static TrustServer mqttServer;
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -92,7 +93,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     private void init() {
         L.d("base Activity");
 
-
+        trustRequest = new TrustRequest(resultCallBack,Config.SERVER_URL);
         gson = new Gson();
         drawLiner = new DrawLiner(context);
         positioning = new Positioning();
@@ -106,6 +107,19 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     //------------------------自定义--------------------------------------------
+    private TrustRequest.onResultCallBack resultCallBack = new TrustRequest.onResultCallBack() {
+        @Override
+        public void CallBack(int code, int status, Object object) {
+            resultCallBeack(object,code,status);
+        }
+    };
+
+
+    public void requestCallBeack(String url, Map<String,Object> map,int type ,int requestType){
+        trustRequest.Request(url,map,type,requestType,trustRequest.HeaderJson,"Bearer V95iRBXYKLOdm3y/eqM0Vz05yYiP53r+T5oIoQ1B1M0=");
+    }
+
+
     //dialog 点击回调
     protected void getOrderDialogResult(String startName, String endName, int taxiCast){
 
@@ -150,6 +164,22 @@ public abstract class BaseActivity extends AppCompatActivity {
     };
 
 
+
+    /**
+     * 检查返回结果
+     * @param status
+     * @param msg
+     * @return
+     */
+    protected boolean getResultStatus(int status , String msg){
+        if (status == 1) {//成功
+            return true;
+        }else{
+            L.e("error message :"+msg);
+            return false;
+        }
+    }
+
     private void resultErrorMqtt(String msg){
         showToast(msg);
     }
@@ -181,9 +211,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     //-------------------------基础配置-------------------------------------------------------------------
 
-    public void requestCallBeack(String url, Map<String,Object> map,int type,boolean isNeed){
 
-    }
 
     //网络请求回调
 

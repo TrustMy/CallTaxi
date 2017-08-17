@@ -1,5 +1,7 @@
 package com.trust.shengyu.calltaxidriver.tools.beans;
 
+import java.io.Serializable;
+
 /**
  * Created by Trust on 2017/8/8.
  */
@@ -15,6 +17,9 @@ public class OrderBean extends Bean {
     private MsgBean msg;
     private boolean status;
     private int type;
+
+
+
 
     public void setMsg(MsgBean msg) {
         this.msg = msg;
@@ -40,16 +45,24 @@ public class OrderBean extends Bean {
         return type;
     }
 
-    public static class MsgBean extends Bean{
+    public static class MsgBean implements Serializable {
         /**
          * taxiCast : 14
          * startName : 上海市普陀区顺义路10号靠近普陀长风开业园区
          * endName : 上海市普陀区长风新村街道白玉路10号福兴村附近
          */
-
+        private String orderNo;
         private int taxiCast;
         private String startName;
         private String endName;
+
+        public String getOrderNo() {
+            return orderNo;
+        }
+
+        public void setOrderNo(String orderNo) {
+            this.orderNo = orderNo;
+        }
 
         public void setTaxiCast(int taxiCast) {
             this.taxiCast = taxiCast;

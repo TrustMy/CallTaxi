@@ -27,7 +27,9 @@ import com.trust.shengyu.calltaxidriver.base.BaseActivity;
 import com.trust.shengyu.calltaxidriver.base.BaseRecyclerViewAdapter;
 import com.trust.shengyu.calltaxidriver.mqtt.TrustServer;
 import com.trust.shengyu.calltaxidriver.tools.L;
+import com.trust.shengyu.calltaxidriver.tools.TrustTools;
 import com.trust.shengyu.calltaxidriver.tools.beans.Bean;
+import com.trust.shengyu.calltaxidriver.tools.beans.DriverBean;
 import com.trust.shengyu.calltaxidriver.tools.beans.OrderBean;
 
 import org.json.JSONObject;
@@ -35,6 +37,7 @@ import org.json.JSONObject;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.WeakHashMap;
 
 import butterknife.BindView;
@@ -63,7 +66,7 @@ public class MainActivity extends BaseActivity {
     RecyclerView mainRecycler;
     private ArrayList<Object> ml;
     private int lastPosition;
-
+    private OrderBean bean;
     private boolean ORDER_MESSAGE = true;//跳转查看详细信息 选择是否接单
     private boolean ORDER_SUMBIT = false;//抢单后,跳转
 
@@ -98,7 +101,7 @@ public class MainActivity extends BaseActivity {
         mainRecyclerAdapter.setItemOnClickListener(new BaseRecyclerViewAdapter.ItemOnClickListener() {
             @Override
             public void itemOnClickListener(View v, int pos, Object msg) {
-                OrderBean bean = (OrderBean) msg;
+                bean = (OrderBean) msg;
                 L.d("你点击了xxx:" + bean.getMsg().getStartName());
                 toIntent(bean,ORDER_MESSAGE);
             }
@@ -106,13 +109,14 @@ public class MainActivity extends BaseActivity {
         mainRecyclerAdapter.setOnSubimtListener(new MainRecyclerAdapter.onSubimtListener() {
             @Override
             public void resultSubmit(View v, int pos, Object object) {
-                OrderBean bean = (OrderBean) object;
+                bean = (OrderBean) object;
                 L.d("点击了提交订单:" + bean.getMsg().getStartName());
-                Map<String, Object> determine = new WeakHashMap<>();
-                determine.put("status", true);
-                determine.put("type", Config.MQTT_TYPE_PLACE_AN_ORDER);
-                sendMqttMessage(Config.sendTopic, 1, new JSONObject(determine).toString());
-                toIntent(bean,ORDER_SUMBIT);
+                Map<String,Object> map = new WeakHashMap<>();
+                map.put("orderNo",bean.getMsg().getOrderNo());
+                map.put("receiveTime",TrustTools.getSystemTimeData());
+                map.put("driver", Config.Customer);
+                requestCallBeack(Config.DRIVER_ORDER,map,Config.TAG_DRIVER_ORDER,trustRequest.POST);
+
             }
         });
         LinearLayoutManager layoutManager = new LinearLayoutManager(context);
@@ -192,7 +196,7 @@ public class MainActivity extends BaseActivity {
 
     //跳转 orderStatus页面
     public void toIntent(OrderBean bean , boolean type){
-        Intent intent = new Intent(context, OrderStatusActivity.class);
+        Intent intent = new Intent(MainActivity.this, OrderStatusActivity.class);
         intent.putExtra("type",type);
         intent.putExtra("order", bean);
         startActivity(intent);
@@ -209,6 +213,25 @@ public class MainActivity extends BaseActivity {
         mainRecyclerAdapter.notifyDataSetChanged();
     }
 
+
+    @Override
+    public void successCallBeack(Object obj, int type) {
+        String msg = (String) obj;
+        switch (type) {
+            case Config.TAG_DRIVER_ORDER:
+                DriverBean driverBean = gson.fromJson(msg,DriverBean.class);
+                if(getResultStatus(driverBean.getStatus(),msg)){
+
+                Map<String, Object> determine = new WeakHashMap<>();
+                determine.put("status", true);
+                determine.put("type", Config.MQTT_TYPE_PLACE_AN_ORDER);
+                sendMqttMessage(Config.sendTopic, 1, new JSONObject(determine).toString());
+                toIntent(bean,ORDER_SUMBIT);
+
+                }
+                break;
+        }
+    }
 
     @Override
     protected void onResume() {
