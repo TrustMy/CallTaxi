@@ -4,6 +4,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -137,4 +138,33 @@ public class TrustTools<T extends View> {
         return System.currentTimeMillis();
     }
 
+    /**
+     * 省略double 6位
+     * @param v
+     * @param scale
+     * @return
+     */
+    public   static   double   round(double v,int   scale){
+        if(scale<0){
+            throw   new   IllegalArgumentException(
+                    "The   scale   must   be   a   positive   integer   or   zero");
+        }
+        BigDecimal b   =   new   BigDecimal(Double.toString(v));
+        BigDecimal   one   =   new   BigDecimal("1");
+        return   b.divide(one,scale,BigDecimal.ROUND_HALF_UP).doubleValue();
+    }
+
+    /**
+     *  获取指定gps时间 String
+     * @param time
+     * @return
+     */
+    public static String getGPSNumTime(long  time)
+    {
+        L.d("time:"+time);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date dateTime = new Date(time);//获取当前时间
+        String GPSTime = formatter.format(dateTime);
+        return GPSTime;
+    }
 }

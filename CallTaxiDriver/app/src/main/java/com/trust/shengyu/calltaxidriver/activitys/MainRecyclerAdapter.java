@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.trust.shengyu.calltaxidriver.R;
 import com.trust.shengyu.calltaxidriver.activitys.orderhistory.OrderHistoryAdatper;
 import com.trust.shengyu.calltaxidriver.base.BaseRecyclerViewAdapter;
+import com.trust.shengyu.calltaxidriver.tools.beans.MqttBeans;
 import com.trust.shengyu.calltaxidriver.tools.beans.OrderBean;
 
 import java.util.List;
@@ -41,10 +42,10 @@ public class MainRecyclerAdapter extends BaseRecyclerViewAdapter {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         MainRecycler mainRecycler = (MainRecycler) holder;
-        List<OrderBean> orderBeanList = ml;
-        mainRecycler.orderStartTv.setText(orderBeanList.get(position).getMsg().getStartName());
-        mainRecycler.orderEndTv.setText(orderBeanList.get(position).getMsg().getEndName());
-        mainRecycler.orderFareTv.setText("+"+orderBeanList.get(position).getMsg().getTaxiCast()+"");
+        List<MqttBeans> orderBeanList = ml;
+        mainRecycler.orderStartTv.setText(orderBeanList.get(position).getContent().getOrder().getStartAddress());
+        mainRecycler.orderEndTv.setText(orderBeanList.get(position).getContent().getOrder().getEndAddress());
+        mainRecycler.orderFareTv.setText("+"+orderBeanList.get(position).getContent().getOrder().getEstimatesAmount()+"");
     }
 
     class MainRecycler extends ViewHolder{

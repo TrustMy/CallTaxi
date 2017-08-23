@@ -21,7 +21,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-
 /**
  * Created by Trust on 2017/8/7.
  */
@@ -70,7 +69,9 @@ public class TrustRequest {
 
         switch (requestHeader){
             case HeaderJson:
-                msg = new JSONObject(map).toString();
+                if (map != null) {
+                    msg = new JSONObject(map).toString();
+                }
                 break;
             case HeaderUrlencoded:
                 StringBuffer sb = null;
@@ -85,11 +86,41 @@ public class TrustRequest {
                 msg = sb.toString();
                 break;
         }
+
         if (msg != null) {
             L.d("Request 发送的json:"+msg);
         }
             if(requestType == GET){
-                request =  builder.get().url(urls).build();
+                if (token != null) {
+                    builder.addHeader("Token", token);
+                }
+                if(map != null){
+                    StringBuffer sb = null;
+                    for (Map.Entry<String, Object> entry : map.entrySet()){
+                        if(sb == null){
+                            sb = new StringBuffer();
+                            if (entry.getValue() instanceof String){
+                                sb.append("?"+entry.getKey()+"= \""+entry.getValue()+"\"");
+                            }else{
+                                sb.append("?"+entry.getKey()+"="+entry.getValue());
+                            }
+
+                        }else{
+                            if (entry.getValue() instanceof String){
+                                sb.append("&"+entry.getKey()+"= \""+entry.getValue()+"\"");
+                            }else{
+                                sb.append("&"+entry.getKey()+"="+entry.getValue());
+                            }
+
+                        }
+                    }
+                    builder.addHeader("Token",token);
+                    L.d("get usrl :"+urls+ sb.toString());
+                    request =  builder.get().url(urls+ sb.toString()).build();
+                }else{
+                    L.d("get usrl :"+urls);
+                    request =  builder.get().url(urls).build();
+                }
             }else {
                 if (msg != null) {
                     if (requestHeader != HeaderNull){
@@ -184,6 +215,10 @@ public class TrustRequest {
             public void onResponse(Call call, Response response) throws IOException {
                 L.d("onResponse:"+response.toString());
                 if(response.code() == 200){
+                    if(type == Config.TAG_DRIVER_GET_TOKEN){
+                        Config.token = response.header("Token");
+                    }
+
                     String json = response.body().string();
                     L.d("json:"+json);
                     if(json != null && !json.equals("")){

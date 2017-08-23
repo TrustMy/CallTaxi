@@ -27,8 +27,10 @@ import com.trust.shengyu.calltaxidriver.mqtt.TrustServer;
 import com.trust.shengyu.calltaxidriver.mqtt.network.CallTaxiCommHelper;
 import com.trust.shengyu.calltaxidriver.tools.L;
 import com.trust.shengyu.calltaxidriver.tools.beans.Bean;
+import com.trust.shengyu.calltaxidriver.tools.beans.MqttBeans;
 import com.trust.shengyu.calltaxidriver.tools.beans.MqttResultBean;
 import com.trust.shengyu.calltaxidriver.tools.beans.OrderBean;
+import com.trust.shengyu.calltaxidriver.tools.beans.RefusedOrderBean;
 import com.trust.shengyu.calltaxidriver.tools.dialog.TrustDialog;
 import com.trust.shengyu.calltaxidriver.tools.gps.DrawLiner;
 import com.trust.shengyu.calltaxidriver.tools.gps.Positioning;
@@ -77,6 +79,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         Config.context = this;
         init();
         initPush();
+
     }
 
     private void initPush() {
@@ -104,6 +107,8 @@ public abstract class BaseActivity extends AppCompatActivity {
                 getOrderDialogResult(startName,endName,taxiCast);
             }
         });
+
+
     }
 
     //------------------------自定义--------------------------------------------
@@ -115,8 +120,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     };
 
 
-    public void requestCallBeack(String url, Map<String,Object> map,int type ,int requestType){
-        trustRequest.Request(url,map,type,requestType,trustRequest.HeaderJson,"Bearer V95iRBXYKLOdm3y/eqM0Vz05yYiP53r+T5oIoQ1B1M0=");
+    public void requestCallBeack(String url, Map<String,Object> map,int type ,int requestType,String token){
+        trustRequest.Request(url,map,type,requestType,trustRequest.HeaderJson,token);
     }
 
 
@@ -139,8 +144,8 @@ public abstract class BaseActivity extends AppCompatActivity {
                     if (bean.getStatus()){
                         switch (bean.getType()){
                             case Config.MQTT_TYPE_PLACE_AN_ORDER:
-                                OrderBean orderBean = gson.fromJson(msg.toString(), OrderBean.class);
-                                resultMqttTypePlaceAnOrder(orderBean);
+//                                OrderBean orderBean = gson.fromJson(msg.toString(), OrderBean.class);
+//                                resultMqttTypePlaceAnOrder(orderBean);
                                 break;
                             case Config.MQTT_TYPE_START_ORDER:
                                 resultMqttTypeStartOrder(bean);
@@ -149,7 +154,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                                 resultMqttTypeEndOrder(bean);
                                 break;
                             case Config.MQTT_TYPE_REFUSED_ORDER:
-                                resultMqttTypeRefusedOrder(bean);
+//                                resultMqttTypeRefusedOrder(bean);
                                 break;
                             default:
                                 resultMqttTypeOther(bean);
@@ -185,7 +190,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     //下订单回调
-    public  void resultMqttTypePlaceAnOrder(Bean bean){
+    public  void resultMqttTypePlaceAnOrder(MqttBeans bean){
         L.d("resultMqttTypePlaceAnOrder");
     };
     //开始订单回调
@@ -193,7 +198,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     //结束订单回调
     public  void resultMqttTypeEndOrder(MqttResultBean bean){};
     //拒绝订单回调
-    public  void resultMqttTypeRefusedOrder(MqttResultBean bean){};
+    public  void resultMqttTypeRefusedOrder(RefusedOrderBean bean){L.d("resultMqttTypePlaceAnOrder");};
     //未知消息回调
     public  void resultMqttTypeOther(Bean bean){
     };

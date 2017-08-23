@@ -7,6 +7,7 @@ import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import com.trust.shengyu.calltaxidriver.Config;
 import com.trust.shengyu.calltaxidriver.R;
 import com.trust.shengyu.calltaxidriver.base.BaseActivity;
 import com.trust.shengyu.calltaxidriver.base.BaseRecyclerViewAdapter;
@@ -15,6 +16,8 @@ import com.trust.shengyu.calltaxidriver.tools.beans.Bean;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -25,6 +28,7 @@ public class OrderHistoryActivity extends BaseActivity {
     RecyclerView orderRecyclerview;
     private OrderHistoryAdatper orderHistoryAdapterl;
     private Context context = OrderHistoryActivity.this;
+    private int indexPage = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +36,14 @@ public class OrderHistoryActivity extends BaseActivity {
         ButterKnife.bind(this);
         initView();
         initData();
+
+        Map<String,Object> map = new WeakHashMap<>();
+        map.put("driver", Config.Customer);
+        map.put("indexPage",indexPage);
+        map.put("status",Config.UserTypeDriver);
+
+        requestCallBeack(Config.SERACH_HISTORY_ORDER_PAGING,map,Config.TAG_SERACH_HISTORY_ORDER_PAGING
+                ,trustRequest.GET,Config.token);
     }
 
 

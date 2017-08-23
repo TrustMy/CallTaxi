@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -13,6 +14,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.trust.shengyu.calltaxi.R;
 import com.trust.shengyu.calltaxi.tools.TrustTools;
 
+import butterknife.OnClick;
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 
 /**
@@ -130,10 +132,33 @@ public class TrustDialog {
         return dialog;
     }
 
+    /**
+     * 等待司机接单
+     * @param activity
+     * @return
+     */
+
     public Dialog showOrderWaitDialog(Activity activity){
         TrustTools trustTools = new TrustTools();
         final Dialog dialog = new Dialog(activity, R.style.customDialog);
         View view = LayoutInflater.from(activity).inflate(R.layout.order_wait_dialog,null);
+        Button cancler = (Button) view.findViewById(R.id.order_wait_dialog_cancel);
+        cancler.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                click.CallBack();
+            }
+        });
+        ImageView gifImg = (ImageView) view.findViewById(R.id.order_dialog_img_gif);
+        Glide.with(activity).load(R.drawable.wait_dialog).
+                placeholder(R.mipmap.wait_log_one)
+                .error(R.mipmap.wait_log_one).
+                diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                .crossFade(1000).bitmapTransform(
+                new RoundedCornersTransformation(activity,30,0,
+                        RoundedCornersTransformation.
+                                CornerType.ALL)).into(gifImg);
+
         dialog.setContentView(view);
         dialog.setCanceledOnTouchOutside(false);// 设置点击屏幕Dialog不消失
         if(!activity.isFinishing()){
@@ -146,6 +171,50 @@ public class TrustDialog {
             });
         }
         return dialog;
+    }
+
+    public interface onClick{
+        void CallBack();
+    };
+    public onClick click;
+    public void setOnClick(onClick click){
+        this.click = click;
+    }
+
+
+    /**
+     * 取消订单
+     * @param activity
+     * @return
+     */
+    public TrustDialog showExceptionDescription(Activity activity){
+        final Dialog dialog = new Dialog(activity, R.style.customDialog);
+        View view = LayoutInflater.from(activity).inflate(R.layout.order_exception_description_dialog,null);
+        final EditText description = (EditText) view.findViewById(R.id.order_exception_description_ed);
+        view.findViewById(R.id.order_exception_description_determine).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String msg = description.getText().toString().trim();
+                dialogClickListener.resultMessager(msg);
+                dialog.dismiss();
+            }
+        });
+
+        dialog.setContentView(view);
+        dialog.setCanceledOnTouchOutside(false);// 设置点击屏幕Dialog不消失
+        if(!activity.isFinishing()){
+            dialog.show();
+        }
+        cacelButton(dialog,(Button)view.findViewById(R.id.order_exception_description_cancel));
+        return this;
+    }
+    public interface onDialogClickListener{
+        void resultMessager(String msg);
+    }
+    public onDialogClickListener dialogClickListener;
+
+    public void setOnClickListener(onDialogClickListener dialogClickListener){
+        this.dialogClickListener = dialogClickListener;
     }
 
 

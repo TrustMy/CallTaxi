@@ -31,6 +31,8 @@ import com.trust.shengyu.calltaxidriver.base.BaseActivity;
 import com.trust.shengyu.calltaxidriver.tools.L;
 import com.trust.shengyu.calltaxidriver.tools.TrustTools;
 import com.trust.shengyu.calltaxidriver.tools.beans.Bean;
+import com.trust.shengyu.calltaxidriver.tools.beans.MqttBean;
+import com.trust.shengyu.calltaxidriver.tools.beans.MqttBeans;
 import com.trust.shengyu.calltaxidriver.tools.beans.MqttResultBean;
 import com.trust.shengyu.calltaxidriver.tools.beans.OrderBean;
 import com.trust.shengyu.calltaxidriver.tools.gps.ConversionLocation;
@@ -437,7 +439,8 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
     }
 
     @Override
-    public void resultMqttTypePlaceAnOrder(Bean bean) {
+    public void resultMqttTypePlaceAnOrder(MqttBeans bean) {
+        /*
         L.d("orderBean = null");
         OrderBean orderBean = (OrderBean) bean;
         if (orderBean != null) {
@@ -446,10 +449,8 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
         } else {
             L.d("orderBean = null");
         }
+        */
     }
 
-    @Override
-    public void resultMqttTypeRefusedOrder(MqttResultBean bean) {
-        showSnackbar(mapOrderStartName, "顾客拒绝:" + bean.getMsg().getMsg(), null);
-    }
+
 }

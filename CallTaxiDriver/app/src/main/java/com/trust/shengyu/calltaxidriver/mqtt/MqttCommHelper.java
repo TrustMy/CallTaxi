@@ -282,9 +282,9 @@ public  class MqttCommHelper {
                 Boolean retained = false;
                 if(!pushStatus && msg != null){
                     try {
-                        L.d("publish :"+msg);
+//                        L.d("publish :"+msg);
                         client.publish(topic, msg.getBytes(), qos.intValue(), retained.booleanValue());
-                        dbManager.addData("发送的json:"+msg+"|"+TrustTools.getSystemTimeString());
+//                        dbManager.addData("发送的json:"+msg+"|"+TrustTools.getSystemTimeString());
                     } catch (MqttException e) {
                         e.printStackTrace();
                     }

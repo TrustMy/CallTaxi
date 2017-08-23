@@ -14,8 +14,13 @@ import com.trust.shengyu.calltaxi.mqtt.network.CallTaxiCommHelper;
 import com.trust.shengyu.calltaxi.tools.L;
 import com.trust.shengyu.calltaxi.tools.beans.MqttBean;
 import com.trust.shengyu.calltaxi.tools.beans.MqttResultBean;
+import com.trust.shengyu.calltaxi.tools.beans.MqttTypePlaceAnOrder;
+import com.trust.shengyu.calltaxi.tools.beans.RefusedOrderBean;
+import com.trust.shengyu.calltaxi.tools.gps.GpsHelper;
 
 import java.util.LinkedList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by Trust on 2017/8/3.
@@ -30,6 +35,8 @@ public class TrustServer extends Service {
     LinkedList<MqttBean> orderTaskQueue = new LinkedList();
     LinkedList<MqttBean> otherTaskQueue = new LinkedList();
     public boolean appStatus = false;
+    GpsHelper gpsHelper;
+    protected static ExecutorService threadPool = Executors.newCachedThreadPool();
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -44,6 +51,14 @@ public class TrustServer extends Service {
             callTaxiCommHelper.setOnMqttCallBackResultListener(onMqttCallBackResultListener);
             callTaxiCommHelper.doClientConnection();
             gson = new Gson();
+            gpsHelper = new GpsHelper();
+            threadPool.execute(gpsHelper);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            gpsHelper.startGpsListening();
         }
 
     }
@@ -52,14 +67,15 @@ public class TrustServer extends Service {
     protected   MqttCommHelper.onMqttCallBackResultListener onMqttCallBackResultListener = new MqttCommHelper.onMqttCallBackResultListener() {
         @Override
         public void CallBack(String topic, final Object msg) {
-            if(!appStatus){
-                //分类 通知类型
-                if (topic.equals(Config.TestTopics[0])){
-                    orderTaskQueue.add(new MqttBean(topic,msg.toString()));
-                }else{
-                    otherTaskQueue.add(new MqttBean(topic,msg.toString()));
-                }
-            }else{
+            L.d("topic :"+topic+"|msg:"+msg.toString());
+//            if(!appStatus){
+//                //分类 通知类型
+//                if (topic.equals(Config.TestTopics[0])){
+//                    orderTaskQueue.add(new MqttBean(topic,msg.toString()));
+//                }else{
+//                    otherTaskQueue.add(new MqttBean(topic,msg.toString()));
+//                }
+//            }else{
                 //分类 通知类型
                 if (topic.equals(Config.TestTopics[0])){
                     resultMqttTypr(msg.toString());
@@ -67,7 +83,7 @@ public class TrustServer extends Service {
                     //其他同志
                 }
 
-            }
+//            }
 
 
         }
@@ -85,9 +101,9 @@ public class TrustServer extends Service {
     //实时显示通知
     public void resultMqttTypr(String msg){
         //此时已在主线程中，可以更新UI了
-        MqttResultBean bean =  gson.fromJson(msg.toString(), MqttResultBean.class);
+        MqttTypePlaceAnOrder bean =  gson.fromJson(msg.toString(), MqttTypePlaceAnOrder.class);
 
-        if (bean.getStatus()){
+        if (bean.getStatus() == Config.SUCCESS){
             switch (bean.getType()){
                 case Config.MQTT_TYPE_PLACE_AN_ORDER:
                     baseActivity.resultMqttTypePlaceAnOrder(null);
@@ -99,7 +115,8 @@ public class TrustServer extends Service {
                     baseActivity.resultMqttTypeEndOrder(bean);
                     break;
                 case Config.MQTT_TYPE_REFUSED_ORDER:
-                    baseActivity.resultMqttTypeRefusedOrder(bean);
+                    RefusedOrderBean refusedOrderBean = gson.fromJson(msg,RefusedOrderBean.class);
+                    baseActivity.resultMqttTypeRefusedOrder(refusedOrderBean);
                     break;
                 default:
                     baseActivity.resultMqttTypeOther(bean);
@@ -112,7 +129,7 @@ public class TrustServer extends Service {
     }
 
     public void filterOrder(){
-        MqttResultBean resultBean;
+        MqttTypePlaceAnOrder resultBean;
         if(!orderTaskQueue.isEmpty()){
             //有数据
 
@@ -132,8 +149,8 @@ public class TrustServer extends Service {
                 for (MqttBean bean : orderTaskQueue) {
                     resultBean = checkType(bean.getMsg());
                     if (resultBean.getType() == Config.MQTT_TYPE_REFUSED_ORDER) {
-                        L.d("拒绝订单:"+resultBean.getMsg());
-                        baseActivity.resultMqttTypeRefusedOrder(resultBean);
+//                        L.d("拒绝订单:"+resultBean.getMsg());
+//                        baseActivity.resultMqttTypeRefusedOrder(resultBean);
                         orderTaskQueue.clear();
                         break;
                     }
@@ -163,7 +180,7 @@ public class TrustServer extends Service {
                     resultBean = checkType(bean.getMsg());
                     if (resultBean.getType() == Config.MQTT_TYPE_PLACE_AN_ORDER) {
                         L.d("订单回复");
-                        baseActivity.resultMqttTypePlaceAnOrder(resultBean);
+//                        baseActivity.resultMqttTypePlaceAnOrder(resultBean);
                         orderTaskQueue.clear();
                         break;
                     }
@@ -176,8 +193,8 @@ public class TrustServer extends Service {
         }
     }
 
-    public MqttResultBean checkType(String msg){
-        MqttResultBean bean =  gson.fromJson(msg.toString(), MqttResultBean.class);
+    public MqttTypePlaceAnOrder checkType(String msg){
+        MqttTypePlaceAnOrder bean =  gson.fromJson(msg.toString(), MqttTypePlaceAnOrder.class);
         return bean;
     }
 

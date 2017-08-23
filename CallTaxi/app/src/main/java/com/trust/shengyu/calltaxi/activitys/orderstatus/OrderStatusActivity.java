@@ -15,6 +15,9 @@ import com.trust.shengyu.calltaxi.tools.L;
 import com.trust.shengyu.calltaxi.tools.TrustTools;
 import com.trust.shengyu.calltaxi.tools.beans.Bean;
 import com.trust.shengyu.calltaxi.tools.beans.MqttResultBean;
+import com.trust.shengyu.calltaxi.tools.beans.MqttTypePlaceAnOrder;
+import com.trust.shengyu.calltaxi.tools.beans.RefusedOrderBean;
+import com.trust.shengyu.calltaxi.tools.dialog.TrustDialog;
 
 import org.json.JSONObject;
 
@@ -63,6 +66,28 @@ public class OrderStatusActivity extends BaseActivity {
             case Config.OrderStatusDelivery://异常退出 下单成功 推送给司机
                 orderWaitDialog = trustDialog.showOrderWaitDialog(this);
                 orderNo = getIntent().getStringExtra("orderNo");
+                trustDialog.setOnClick(new TrustDialog.onClick() {
+                    @Override
+                    public void CallBack() {
+                        trustDialog.showExceptionDescription(OrderStatusActivity.this).setOnClickListener(
+                                new TrustDialog.onDialogClickListener() {
+                                    @Override
+                                    public void resultMessager(String msg) {
+                                        if (msg != null) {
+                                            Map<String, Object> cancelMap = new WeakHashMap<>();
+                                            cancelMap.put("orderNo",orderNo);
+                                            cancelMap.put("status",Config.User);
+                                            cancelMap.put("remark",msg);
+                                            requestCallBeack(Config.CANCEL_ORDER,cancelMap,Config.TAG_CANCEL_ORDER,trustRequest.PUT,Config.token);
+
+                                        }else{
+                                            L.e("拒绝订单原因为null");
+                                        }
+                                    }
+                                }
+                        );
+                    }
+                });
                 break;
             case Config.OrderStatusOrders://异常退出 司机已经接单
                 break;
@@ -93,14 +118,21 @@ public class OrderStatusActivity extends BaseActivity {
 
     @Override
     public void baseClickResult(View v) {
-        Map<String, Object> map = new WeakHashMap<>();
+        final Map<String, Object> map = new WeakHashMap<>();
         Map<String, Object> maps = new WeakHashMap<>();
         switch (v.getId()) {
             case R.id.map_order_cancel:
-                map.put("orderNo",orderNo);
-                map.put("status",Config.UserTypeClient);
-                map.put("remark","理由是,我不想坐车了.");
-                requestCallBeack(Config.CANCEL_ORDER,map,Config.TAG_CANCEL_ORDER,trustRequest.PUT);
+                trustDialog.showExceptionDescription(this).setOnClickListener(new TrustDialog.onDialogClickListener() {
+                    @Override
+                    public void resultMessager(String msg) {
+                        map.put("orderNo",orderNo);
+                        map.put("status",Config.User);
+                        map.put("remark",msg);
+                        requestCallBeack(Config.CANCEL_ORDER,map,Config.TAG_CANCEL_ORDER,trustRequest.PUT,
+                                Config.token);
+
+                    }
+                });
 
                 /*
                 maps.put("msg", "我不想坐车了!");
@@ -117,22 +149,22 @@ public class OrderStatusActivity extends BaseActivity {
     }
 
     @Override
-    public void resultMqttTypeStartOrder(MqttResultBean bean) {
+    public void resultMqttTypeStartOrder(MqttTypePlaceAnOrder bean) {
         showSnackbar(mapOrderCancel, "已经上车!", null);
     }
 
     @Override
-    public void resultMqttTypeEndOrder(MqttResultBean bean) {
+    public void resultMqttTypeEndOrder(MqttTypePlaceAnOrder bean) {
         orderStatusDriverMsgLayout.setVisibility(View.VISIBLE);
         orderStatusEnd.setVisibility(View.VISIBLE);
         showSnackbar(mapOrderCancel, "已经下车", null);
     }
 
     @Override
-    public void resultMqttTypeRefusedOrder(MqttResultBean bean) {
+    public void resultMqttTypeRefusedOrder(RefusedOrderBean bean) {
         L.e("司机拒绝接单");
-        showSnackbar(mapOrderCancel, "司机拒绝:" + bean.getMsg(), null);
-        trustDialog.showErrorOrderDialog(this,bean.getMsg());
+        showSnackbar(mapOrderCancel, "司机拒绝:"  , null);
+        trustDialog.showErrorOrderDialog(this,bean.getContent().getOrder().getRemark());
     }
 
     @Override
@@ -147,7 +179,7 @@ public class OrderStatusActivity extends BaseActivity {
     public void successCallBeack(Object obj, int type) {
         switch (type){
             case Config.TAG_CANCEL_ORDER:
-                L.d("返回结果:"+obj);
+                finish();
                 break;
         }
     }

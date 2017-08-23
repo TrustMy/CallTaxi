@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -67,7 +68,9 @@ public class TrustRequest {
 
         switch (requestHeader){
             case HeaderJson:
-                msg = new JSONObject(map).toString();
+                if (map != null) {
+                    msg = new JSONObject(map).toString();
+                }
                 break;
             case HeaderUrlencoded:
                 StringBuffer sb = null;
@@ -82,11 +85,40 @@ public class TrustRequest {
                 msg = sb.toString();
                 break;
         }
+
         if (msg != null) {
             L.d("Request 发送的json:"+msg);
         }
             if(requestType == GET){
-                request =  builder.get().url(urls).build();
+                if (token != null) {
+                    builder.addHeader("Token",token);
+                }
+                if(map != null){
+                    StringBuffer sb = null;
+                    for (Map.Entry<String, Object> entry : map.entrySet()){
+                        if(sb == null){
+                            sb = new StringBuffer();
+                            if (entry.getValue() instanceof String){
+                                sb.append("?"+entry.getKey()+"= \""+entry.getValue()+"\"");
+                            }else{
+                                sb.append("?"+entry.getKey()+"="+entry.getValue());
+                            }
+
+                        }else{
+                            if (entry.getValue() instanceof String){
+                                sb.append("&"+entry.getKey()+"= \""+entry.getValue()+"\"");
+                            }else{
+                                sb.append("&"+entry.getKey()+"="+entry.getValue());
+                            }
+
+                        }
+                    }
+                    builder.addHeader("Token",token);
+                    L.d("get usrl :"+urls+ sb.toString());
+                    request =  builder.get().url(urls+ sb.toString()).build();
+                }else{
+                    request =  builder.get().url(urls).build();
+                }
             }else {
                 if (msg != null) {
                     if (requestHeader != HeaderNull){
@@ -103,6 +135,7 @@ public class TrustRequest {
             }
             if (request != null) {
                 executeResponse(request,requestCode);
+                L.d("url:"+request.url().toString());
             }
 
     }
@@ -123,6 +156,7 @@ public class TrustRequest {
         body = returnBody(requestHeader,msg);
 
         if (body != null) {
+
             builder.url(url);
             if(token!= null){
                builder.addHeader("Token", token);
@@ -180,8 +214,14 @@ public class TrustRequest {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 L.d("onResponse:"+response.toString());
+                Headers headers = response.headers();
+
                 if(response.code() == 200){
                     String json = response.body().string();
+                    if (type == Config.TAG_CLIENT_LOGIN){
+                        Config.token = response.header("Token");
+                        L.d("token:"+   Config.token+"headers.toString():"+headers.toString());
+                    }
                     L.d("json:"+json);
                     if(json != null && !json.equals("")){
                         resultCallBack.CallBack(type, Config.SUCCESS,json);

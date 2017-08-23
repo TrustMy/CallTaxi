@@ -59,9 +59,6 @@ public class TrustDialog {
     }
 
 
-
-
-
     public TrustDialog showExceptionDescription(Activity activity){
         final Dialog dialog = new Dialog(activity, R.style.customDialog);
         View view = LayoutInflater.from(activity).inflate(R.layout.order_exception_description_dialog,null);
@@ -143,5 +140,30 @@ public class TrustDialog {
         if(!activity.isFinishing()){
             dialog.show();
         }
+    }
+
+
+    //取消订单 dialog
+
+    public Dialog showErrorOrderDialog(final Activity activity , String msg){
+        final Dialog dialog = new Dialog(activity, R.style.customDialog);
+        View view = LayoutInflater.from(activity).inflate(R.layout.error_order_dialog_layout,null);
+        Button determineBtn = (Button) view.findViewById(R.id.error_order_dialog_determine);
+        determineBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+                activity.finish();
+            }
+        });
+        TextView msgTv = (TextView) view.findViewById(R.id.error_order_dialog_msg);
+        msgTv.setText(msg);
+        dialog.setContentView(view);
+        dialog.setCanceledOnTouchOutside(false);// 设置点击屏幕Dialog不消失
+        if(!activity.isFinishing()){
+            dialog.show();
+        }
+
+        return dialog;
     }
 }

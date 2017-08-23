@@ -3,6 +3,7 @@ package com.trust.shengyu.calltaxi.activitys.mainmap;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -40,16 +41,14 @@ import com.trust.shengyu.calltaxi.activitys.selectend.SelectEndActivity;
 import com.trust.shengyu.calltaxi.base.BaseActivity;
 import com.trust.shengyu.calltaxi.tools.L;
 import com.trust.shengyu.calltaxi.tools.TrustTools;
-import com.trust.shengyu.calltaxi.tools.beans.Bean;
-import com.trust.shengyu.calltaxi.tools.beans.MqttResultBean;
 import com.trust.shengyu.calltaxi.tools.beans.PlaceAnOrderBean;
-import com.trust.shengyu.calltaxi.tools.gps.ConversionLocation;
-import com.trust.shengyu.calltaxi.tools.gps.Maker;
-import com.trust.shengyu.calltaxi.tools.gps.Positioning;
-import com.trust.shengyu.calltaxi.tools.gps.routeplan.RoutePlan;
+import com.trust.shengyu.calltaxi.tools.gdgps.ConversionLocation;
+import com.trust.shengyu.calltaxi.tools.gdgps.Maker;
+import com.trust.shengyu.calltaxi.tools.gdgps.Positioning;
+import com.trust.shengyu.calltaxi.tools.gdgps.routeplan.RoutePlan;
+import com.trust.shengyu.calltaxi.tools.interfaces.LocationInterface;
 
-import org.json.JSONObject;
-
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +108,7 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
 
     private LatLonPoint mStartPoint, mEndPoint;
     private String startName, endName;
-    private int taxiCast;
+    private double taxiCast;
     private LatLng startLatLng ,endLatLng;
     private String orderNo;
     private int orderStatus;
@@ -123,9 +122,9 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
 
         initMap();
         initView();
-        if(mqttServer.resultOrderTaskQueue()){
-            startActivity(new Intent(context,OrderStatusActivity.class));
-        }
+//        if(mqttServer.resultOrderTaskQueue()){
+//            startActivity(new Intent(context,OrderStatusActivity.class));
+//        }
     }
 
     private void initMap() {
@@ -191,10 +190,9 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
             @Override
             public void result(Object money) {
                 L.d("获取费用");
-                int moneys = (int) money;
-                taxiCast = moneys;
+                taxiCast = (double) money;
                 mainOrderCostLayout.setVisibility(View.VISIBLE);
-                mainOrderCost.setText(moneys + "");
+                mainOrderCost.setText(taxiCast + "");
 
                 startName = mainMapStartTv.getText().toString();
                 endName = mainMapEndTv.getText().toString();
@@ -238,18 +236,14 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
                 Map<String,Object> map = new WeakHashMap<>();
                 map.put("startAddress",startName);
                 map.put("endAddress",endName);
-                map.put("customer",Config.Customer);
-                map.put("startLat",startLatLng.latitude);
-                map.put("startLng",startLatLng.longitude);
-                map.put("endLat",endLatLng.latitude);
-                map.put("endLng",endLatLng.longitude);
+                map.put("customer",Config.CustomerId);
+                map.put("locationLat",myLat);
+                map.put("locationLng",myLon);
+
                 map.put("estimateDuration",Config.OrderEstimateDuration);
-                map.put("estimatesAmount",taxiCast*0.1);
+                map.put("estimatesAmount",taxiCast + 0.1);
 
-                requestCallBeack(Config.PLACE_AN_ORDER,map,Config.TAG_PLACE_AN_ORDER,trustRequest.POST);
-
-
-
+                requestCallBeack(Config.PLACE_AN_ORDER,map,Config.TAG_PLACE_AN_ORDER,trustRequest.POST,Config.token);
 
 //                startActivity(new Intent(context,OrderStatusActivity.class));
 
@@ -510,12 +504,16 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         int status;
         if (requestCode == REQUEST_CODE) {
-            String msg = data.getStringExtra("end");
-            if (msg == null) {
+            String endAddress = data.getStringExtra("endAddress");
+            LatLonPoint endLonPoint = data.getParcelableExtra("endLatLng");
+            if (data == null) {
                 L.e("什么都没有选择");
                 status = View.GONE;
             } else {
-                L.d("选择成功");
+                mainMapEndTv.setText(endAddress);
+                mEndPoint = endLonPoint;
+                L.d("选择成功 endAddress:"+endAddress+"|endLonPoint:"+endLonPoint.getLatitude()+
+                "|long:"+endLonPoint.getLongitude());
                 status = View.VISIBLE;
                 routePlan.searchRouteResult(mStartPoint, mEndPoint);
             }
@@ -529,12 +527,11 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
     public void successCallBeack(Object obj, int type) {
         String msg = (String) obj;
         switch (type) {
-            case Config.MQTT_TYPE_PLACE_AN_ORDER:
+            case Config.TAG_PLACE_AN_ORDER:
                 PlaceAnOrderBean placeAnOrderBean = gson.fromJson(msg,PlaceAnOrderBean.class);
                 if(getResultStatus(placeAnOrderBean.getStatus(),msg)){
                     orderNo = placeAnOrderBean.getContent().getOrderNo();
                     orderStatus = placeAnOrderBean.getContent().getStatus();
-
 
 
                     Map<String,Object>  test = new WeakHashMap<>();
@@ -550,7 +547,7 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
                     ttttt.put("status", true);
                     ttttt.put("msg", test);
                     ttttt.put("time", TrustTools.getSystemTimeString());
-                    sendMqttMessage(Config.sendTopic, 1, new JSONObject(ttttt).toString());
+//                    sendMqttMessage(Config.sendTopic, 1, new JSONObject(ttttt).toString());
 
 
                     L.d("下单成功:"+orderNo);
@@ -564,4 +561,18 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
                 break;
         }
     }
+
+    private static double myLat = 31.232185,myLon = 121.413141;
+
+    public static LocationInterface locationInterface = new LocationInterface() {
+        @Override
+        public void getLocation(Location location) {
+            if (location != null){
+
+                myLat = TrustTools.round(location.getLatitude(),6);
+                myLon = TrustTools.round(location.getLongitude(),6);
+            }
+            L.d("myLat:"+myLat+"|myLon:"+myLon);
+        }
+    };
 }

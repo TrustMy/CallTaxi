@@ -9,11 +9,17 @@ import android.widget.TextView;
 import com.amap.api.maps.MapView;
 import com.trust.shengyu.calltaxidriver.Config;
 import com.trust.shengyu.calltaxidriver.R;
+import com.trust.shengyu.calltaxidriver.activitys.MainActivity;
 import com.trust.shengyu.calltaxidriver.base.BaseActivity;
+import com.trust.shengyu.calltaxidriver.mqtt.TrustServer;
 import com.trust.shengyu.calltaxidriver.tools.L;
 import com.trust.shengyu.calltaxidriver.tools.TrustTools;
+import com.trust.shengyu.calltaxidriver.tools.beans.CancelOrderBean;
 import com.trust.shengyu.calltaxidriver.tools.beans.DiverOrderBean;
+import com.trust.shengyu.calltaxidriver.tools.beans.DriverBean;
+import com.trust.shengyu.calltaxidriver.tools.beans.MqttBeans;
 import com.trust.shengyu.calltaxidriver.tools.beans.OrderBean;
+import com.trust.shengyu.calltaxidriver.tools.beans.RefusedOrderBean;
 import com.trust.shengyu.calltaxidriver.tools.dialog.TrustDialog;
 
 import org.json.JSONObject;
@@ -48,6 +54,7 @@ public class OrderStatusActivity extends BaseActivity {
     private boolean type;
     private MapView mapView;
     private String orderNo;
+    private String CancelMsg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,12 +77,12 @@ public class OrderStatusActivity extends BaseActivity {
             //抢单后,跳转
             orderStatusOrderChooseLayout.setVisibility(View.GONE);
         }
-        OrderBean bean = (OrderBean) getIntent().getSerializableExtra("order");
-        orderNo = bean.getMsg().getOrderNo();
+        MqttBeans bean = (MqttBeans) getIntent().getSerializableExtra("order");
+        orderNo = bean.getContent().getOrder().getOrderNo();
         if (bean != null) {
-            orderStatusOrderStartTv.setText(bean.getMsg().getStartName());
-            orderStatusOrderEndTv.setText(bean.getMsg().getEndName());
-            orderStatusOrderCost.setText(bean.getMsg().getTaxiCast() + "");
+            orderStatusOrderStartTv.setText(bean.getContent().getOrder().getStartAddress());
+            orderStatusOrderEndTv.setText(bean.getContent().getOrder().getEndAddress());
+            orderStatusOrderCost.setText(bean.getContent().getOrder().getEstimateDuration() + "");
         }
     }
 
@@ -94,18 +101,21 @@ public class OrderStatusActivity extends BaseActivity {
         map.put("time", TrustTools.getSystemTimeString());
         switch (v.getId()) {
             case R.id.order_status_order_determine:
-                Map<String, Object> determine = new WeakHashMap<>();
-                determine.put("status", true);
-                determine.put("type", Config.MQTT_TYPE_PLACE_AN_ORDER);
-                sendMqttMessage(Config.sendTopic, 1, new JSONObject(determine).toString());
+                Map<String, Object> determineMap = new WeakHashMap<>();
+                map.put("orderNo", orderNo);
+                map.put("receiveTime", TrustTools.getSystemTimeData());
+                map.put("driver", Config.driver+"");
+                requestCallBeack(Config.DRIVER_ORDER, determineMap, Config.TAG_DRIVER_ORDER, trustRequest.POST,Config.token);
                 break;
             case R.id.order_status_order_start:
                 Map<String,Object> startMap = new WeakHashMap<>();
                 startMap.put("orderNo",orderNo);
                 startMap.put("startTime",TrustTools.getSystemTimeData());
-                startMap.put("driver",Config.Customer);
+                startMap.put("driver",Config.driver+"");
+                startMap.put("startLat", MainActivity.myLat);
+                startMap.put("startLng",MainActivity.myLon);
                 requestCallBeack(Config.DRIVER_START_ORDER,startMap,Config.TAG_DRIVER_START_ORDER,
-                        trustRequest.POST);
+                        trustRequest.POST,Config.token);
                 /*
                 map.put("type", Config.MQTT_TYPE_START_ORDER);
                 sendMqttMessage(Config.sendTopic, 1, new JSONObject(map).toString());
@@ -115,12 +125,12 @@ public class OrderStatusActivity extends BaseActivity {
                 Map<String,Object> endMap = new WeakHashMap<>();
                 endMap.put("orderNo",orderNo);
                 endMap.put("endTime",TrustTools.getSystemTimeData());
-                endMap.put("driver",Config.Customer);
+                endMap.put("driver",Config.driver+"");
                 endMap.put("endAddress","终点");
-                endMap.put("endLat",31.222398);
-                endMap.put("endLng",121.41810);
+                endMap.put("endLat",MainActivity.myLat);
+                endMap.put("endLng",MainActivity.myLon);
                 requestCallBeack(Config.DRIVER_END_ORDER,endMap,Config.TAG_DRIVER_END_ORDER,
-                        trustRequest.POST);
+                        trustRequest.POST,Config.token);
                 /*
                 map.put("type", Config.MQTT_TYPE_END_ORDER);
                 sendMqttMessage(Config.sendTopic, 1, new JSONObject(map).toString());
@@ -130,18 +140,35 @@ public class OrderStatusActivity extends BaseActivity {
 
             case R.id.order_status_cancel:
                 trustDialog.showExceptionDescription(this).setOnClickListener(new TrustDialog.onDialogClickListener() {
+
+
                     @Override
                     public void resultMessager(String msg) {
                         if (msg != null) {
+                            CancelMsg = msg;
+                            Map<String, Object> cancelMap = new WeakHashMap<>();
+                            cancelMap.put("orderNo",orderNo);
+                            cancelMap.put("status",Config.Driver);
+                            cancelMap.put("remark",msg);
+                            requestCallBeack(Config.CANCEL_ORDER,cancelMap,Config.TAG_CANCEL_ORDER,trustRequest.PUT
+                            ,Config.token);
+
+                            /*
                             map.put("type", Config.MQTT_TYPE_REFUSED_ORDER);
                             map.put("msg", msg);
                             sendMqttMessage(Config.sendTopic, 1, new JSONObject(map).toString());
+                            */
                             finish();
                         }else{
                             L.e("拒绝订单原因为null");
                         }
                     }
                 });
+                break;
+
+
+            case R.id.order_status_finish:
+                finish();
                 break;
         }
     }
@@ -154,6 +181,7 @@ public class OrderStatusActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         mapView.onResume();
+        TrustServer.baseActivity = this;
     }
 
     /**
@@ -207,6 +235,32 @@ public class OrderStatusActivity extends BaseActivity {
                 map.put("type", Config.MQTT_TYPE_END_ORDER);
                 sendMqttMessage(Config.sendTopic, 1, new JSONObject(map).toString());
                 break;
+
+            case Config.TAG_CANCEL_ORDER:
+                CancelOrderBean cancelOrderBean = gson.fromJson(msg,CancelOrderBean.class);
+                if (getResultStatus(cancelOrderBean.getStatus(),msg)) {
+                    final Map<String, Object> canCelMap = new WeakHashMap<>();
+                    canCelMap.put("status", true);
+                    canCelMap.put("time", TrustTools.getSystemTimeString());
+                    canCelMap.put("type", Config.MQTT_TYPE_REFUSED_ORDER);
+                    canCelMap.put("msg", CancelMsg);
+                    sendMqttMessage(Config.sendTopic, 1, new JSONObject(canCelMap).toString());
+                }
+
+                break;
+
+            case Config.TAG_DRIVER_ORDER:
+                DriverBean driverBean = gson.fromJson(msg, DriverBean.class);
+                if (getResultStatus(driverBean.getStatus(), msg)) {
+                    orderStatusOrderChooseLayout.setVisibility(View.GONE);
+                }
+                break;
         }
+    }
+
+    @Override
+    public void resultMqttTypeRefusedOrder(RefusedOrderBean bean) {
+        L.d("|resultMqttTypeRefusedOrder");
+        trustDialog.showErrorOrderDialog(this,bean.getContent().getOrder().getRemark());
     }
 }

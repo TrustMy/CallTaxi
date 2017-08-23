@@ -7,7 +7,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -23,21 +22,20 @@ import com.google.gson.Gson;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.trust.shengyu.calltaxi.Config;
 import com.trust.shengyu.calltaxi.R;
-import com.trust.shengyu.calltaxi.activitys.orderstatus.OrderStatusActivity;
 import com.trust.shengyu.calltaxi.activitys.registerandlogin.LoginActivity;
 import com.trust.shengyu.calltaxi.db.DBManager;
 import com.trust.shengyu.calltaxi.db.DbHelper;
 import com.trust.shengyu.calltaxi.mqtt.MqttCommHelper;
 import com.trust.shengyu.calltaxi.mqtt.TrustServer;
-import com.trust.shengyu.calltaxi.mqtt.network.CallTaxiCommHelper;
 import com.trust.shengyu.calltaxi.tools.L;
 
-import com.trust.shengyu.calltaxi.tools.StatusBar;
 import com.trust.shengyu.calltaxi.tools.beans.Bean;
 import com.trust.shengyu.calltaxi.tools.beans.MqttResultBean;
+import com.trust.shengyu.calltaxi.tools.beans.MqttTypePlaceAnOrder;
+import com.trust.shengyu.calltaxi.tools.beans.RefusedOrderBean;
 import com.trust.shengyu.calltaxi.tools.dialog.TrustDialog;
-import com.trust.shengyu.calltaxi.tools.gps.DrawLiner;
-import com.trust.shengyu.calltaxi.tools.gps.Positioning;
+import com.trust.shengyu.calltaxi.tools.gdgps.DrawLiner;
+import com.trust.shengyu.calltaxi.tools.gdgps.Positioning;
 import com.trust.shengyu.calltaxi.tools.request.TrustRequest;
 
 
@@ -67,7 +65,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     protected static TrustServer mqttServer;
     protected TrustRequest trustRequest;
-
+    private Dialog waitDialog;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -88,6 +86,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         mActivity = this;
         init();
         initPush();
+
     }
 
     private void initPush() {
@@ -124,6 +123,12 @@ public abstract class BaseActivity extends AppCompatActivity {
                 getOrderDialogResult(startName,endName,taxiCast);
             }
         });
+
+        Map<String,Object> map = new WeakHashMap<>();
+        map.put("driver",Config.CustomerId);
+        map.put("status",Config.UserTypeClient);
+//        requestCallBeack(Config.SERACH_EXECUTE_ORDER,map,Config.TAG_SERACH_EXECUTE_ORDER,
+//                trustRequest.GET);
     }
 
     //------------------------自定义--------------------------------------------
@@ -131,6 +136,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void getOrderDialogResult(String startName, String endName, int taxiCast){
 
     }
+
+    /*
     //mqtt 收到push 回调
     protected   MqttCommHelper.onMqttCallBackResultListener onMqttCallBackResultListener = new MqttCommHelper.onMqttCallBackResultListener() {
         @Override
@@ -145,7 +152,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                     if (bean.getStatus()){
                         switch (bean.getType()){
                             case Config.MQTT_TYPE_PLACE_AN_ORDER:
-                                resultMqttTypePlaceAnOrder(null);
+                                resultMqttTypePlaceAnOrder(bean);
                                 break;
                             case Config.MQTT_TYPE_START_ORDER:
                                 resultMqttTypeStartOrder(bean);
@@ -170,6 +177,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             });
         }
     };
+    */
 
 
     private void resultErrorMqtt(String msg){
@@ -181,13 +189,13 @@ public abstract class BaseActivity extends AppCompatActivity {
         L.d("resultMqttTypePlaceAnOrder");
     };
     //开始订单回调
-    public  void resultMqttTypeStartOrder(MqttResultBean bean){L.d("resultMqttTypeStartOrder");};
+    public  void resultMqttTypeStartOrder(MqttTypePlaceAnOrder bean){L.d("resultMqttTypeStartOrder");};
     //结束订单回调
-    public  void resultMqttTypeEndOrder(MqttResultBean bean){L.d("resultMqttTypeEndOrder");};
+    public  void resultMqttTypeEndOrder(MqttTypePlaceAnOrder bean){L.d("resultMqttTypeEndOrder");};
     //拒绝订单回调
-    public  void resultMqttTypeRefusedOrder(MqttResultBean bean){L.d("resultMqttTypeRefusedOrder");};
+    public  void resultMqttTypeRefusedOrder(RefusedOrderBean bean){L.d("resultMqttTypeRefusedOrder");};
     //未知消息回调
-    public  void resultMqttTypeOther(MqttResultBean bean){};
+    public  void resultMqttTypeOther(MqttTypePlaceAnOrder bean){};
     //发送mqtt消息
     public void sendMqttMessage(String topic ,int qos , String msg){
         if(mqttConnectionStatus){
@@ -195,6 +203,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             mqttServer.sendMqttMsg(topic,qos,msg);
         }else{
 //            showToast("网络异常,请稍后重试!");
+            showToast("网络异常,请重试!");
             L.e("网络异常,请重试!");
         }
     }
@@ -210,16 +219,18 @@ public abstract class BaseActivity extends AppCompatActivity {
             return true;
         }else{
             L.e("error message :"+msg);
+
             return false;
         }
     }
 
 
 
-    //-------------------------基础配置-------------------------------------------------------------------
+    //-------------------------基础配置------------------------------------------------------"Bearer V95iRBXYKLOdm3y/eqM0Vz05yYiP53r+T5oIoQ1B1M0="-------------
 
-    public void requestCallBeack(String url, Map<String,Object> map,int type ,int requestType){
-        trustRequest.Request(url,map,type,requestType,trustRequest.HeaderJson,"Bearer V95iRBXYKLOdm3y/eqM0Vz05yYiP53r+T5oIoQ1B1M0=");
+    public void requestCallBeack(String url, Map<String,Object> map,int type ,int requestType,String token){
+//        waitDialog = trustDialog.showWaitDialog(this);
+        trustRequest.Request(url,map,type,requestType,trustRequest.HeaderJson,token);
     }
 
     private TrustRequest.onResultCallBack resultCallBack = new TrustRequest.onResultCallBack() {
@@ -232,23 +243,25 @@ public abstract class BaseActivity extends AppCompatActivity {
     //网络请求回调
 
     public void resultCallBeack(Object obj,int type,int status){
-
+        trustDialog.dissDialog(waitDialog);
         if(status == Config.SUCCESS){
             successCallBeack(obj,type);
         }else{
             errorCallBeack(obj,type);
         }
-
-
     }
+
+    //返回成功
     public void successCallBeack(Object obj,int type){
 
     }
+    //返回失败
+    public void errorCallBeack(final Object bean, int type){
+        showToast(bean.toString());
 
-    public void errorCallBeack(Object bean,int type){
-        L.e("错误:"+bean.toString());
+
     }
-
+    //过滤点击延迟
     protected void  baseSetOnClick(final View v){
         RxView.clicks(v).throttleFirst(Config.ClickTheInterval, TimeUnit.SECONDS).
                 subscribe(new Consumer<Object>() {
@@ -258,7 +271,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                     }
                 });
     }
-
+    //点击事件
     public void baseClickResult(View v){
 
     }
@@ -270,6 +283,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     public void  onClickFinsh( final Activity activity){
         activity.finish();
     }
+
 
     public void showDialog(Activity activity,String name ,String end , int type){
         dialog  = trustDialog.showOrderDialog(activity,name,end,type);
@@ -324,15 +338,22 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     }
 
-    protected void showToast(String msg){
-        if (toast == null) {
-            toast = Toast.makeText(context,
-                    msg,
-                    Toast.LENGTH_SHORT);
-        } else {
-            toast.setText(msg);
-        }
-        toast.show();
+    protected void showToast(final String msg){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (toast == null) {
+                    toast = Toast.makeText(context,
+                            msg,
+                            Toast.LENGTH_SHORT);
+                } else {
+                    toast.setText(msg);
+                }
+                toast.show();
+            }
+        });
+
+
     }
     Snackbar snackbar;
     protected void showSnackbar(View v,String description,String msg){

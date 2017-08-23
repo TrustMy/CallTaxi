@@ -2,10 +2,10 @@ package com.trust.shengyu.calltaxidriver.activitys;
 
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.Parcelable;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import com.trust.shengyu.calltaxidriver.Config;
 import com.trust.shengyu.calltaxidriver.R;
+import com.trust.shengyu.calltaxidriver.activitys.orderhistory.OrderHistoryActivity;
 import com.trust.shengyu.calltaxidriver.activitys.orderstatus.OrderStatusActivity;
 import com.trust.shengyu.calltaxidriver.base.BaseActivity;
 import com.trust.shengyu.calltaxidriver.base.BaseRecyclerViewAdapter;
@@ -30,14 +31,14 @@ import com.trust.shengyu.calltaxidriver.tools.L;
 import com.trust.shengyu.calltaxidriver.tools.TrustTools;
 import com.trust.shengyu.calltaxidriver.tools.beans.Bean;
 import com.trust.shengyu.calltaxidriver.tools.beans.DriverBean;
+import com.trust.shengyu.calltaxidriver.tools.beans.MqttBeans;
 import com.trust.shengyu.calltaxidriver.tools.beans.OrderBean;
+import com.trust.shengyu.calltaxidriver.tools.interfaces.LocationInterface;
 
 import org.json.JSONObject;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Objects;
 import java.util.WeakHashMap;
 
 import butterknife.BindView;
@@ -60,13 +61,15 @@ public class MainActivity extends BaseActivity {
     ImageView mainDrawerlayoutSex;
     @BindView(R.id.main_drawerlayout_user_status)
     TextView mainDrawerlayoutUserStatus;
+    @BindView(R.id.main_drawerlayout_trip_history_btn)
+    LinearLayout mainDrawerlayoutTripHistoryBtn;
     private MainRecyclerAdapter mainRecyclerAdapter;
     private Context context = MainActivity.this;
     @BindView(R.id.main_recycler)
     RecyclerView mainRecycler;
     private ArrayList<Object> ml;
     private int lastPosition;
-    private OrderBean bean;
+    private MqttBeans bean;
     private boolean ORDER_MESSAGE = true;//跳转查看详细信息 选择是否接单
     private boolean ORDER_SUMBIT = false;//抢单后,跳转
 
@@ -78,14 +81,18 @@ public class MainActivity extends BaseActivity {
 
         initView();
         initData();
-
+        mqttServer.startGps();
         TrustServer.appStatus = true;
+
+
     }
+
 
 
     private void initView() {
 
         baseSetOnClick(mainDrawerlayoutBlack);
+        baseSetOnClick(mainDrawerlayoutTripHistoryBtn);
 
         Toolbar toolbar = (Toolbar) bindView(this, R.id.main_base_include, R.id.base_toolbar);
         toolbar.setTitle("");
@@ -101,21 +108,21 @@ public class MainActivity extends BaseActivity {
         mainRecyclerAdapter.setItemOnClickListener(new BaseRecyclerViewAdapter.ItemOnClickListener() {
             @Override
             public void itemOnClickListener(View v, int pos, Object msg) {
-                bean = (OrderBean) msg;
-                L.d("你点击了xxx:" + bean.getMsg().getStartName());
-                toIntent(bean,ORDER_MESSAGE);
+                bean = (MqttBeans) msg;
+                L.d("你点击了xxx:" + bean.getContent().getOrder().getStartAddress());
+                toIntent(bean, ORDER_MESSAGE);
             }
         });
         mainRecyclerAdapter.setOnSubimtListener(new MainRecyclerAdapter.onSubimtListener() {
             @Override
             public void resultSubmit(View v, int pos, Object object) {
-                bean = (OrderBean) object;
-                L.d("点击了提交订单:" + bean.getMsg().getStartName());
-                Map<String,Object> map = new WeakHashMap<>();
-                map.put("orderNo",bean.getMsg().getOrderNo());
-                map.put("receiveTime",TrustTools.getSystemTimeData());
-                map.put("driver", Config.Customer);
-                requestCallBeack(Config.DRIVER_ORDER,map,Config.TAG_DRIVER_ORDER,trustRequest.POST);
+                bean = (MqttBeans) object;
+                L.d("点击了提交订单:" + bean.getContent().getOrder().getStartAddress());
+                Map<String, Object> map = new WeakHashMap<>();
+                map.put("orderNo", bean.getContent().getOrder().getOrderNo());
+                map.put("receiveTime", TrustTools.getSystemTimeData());
+                map.put("driver", Config.driver+"");
+                requestCallBeack(Config.DRIVER_ORDER, map, Config.TAG_DRIVER_ORDER, trustRequest.POST,Config.token);
 
             }
         });
@@ -149,6 +156,14 @@ public class MainActivity extends BaseActivity {
             }
         });
         mainRecycler.setAdapter(mainRecyclerAdapter);
+
+
+
+        Map<String,Object> map = new WeakHashMap<>();
+        map.put("driver",Config.Customer);
+        map.put("status",Config.UserTypeDriver);
+        requestCallBeack(Config.SERACH_EXECUTE_ORDER,map,Config.TAG_SERACH_EXECUTE_ORDER,
+                trustRequest.GET,Config.token);
     }
 
     private void initData() {
@@ -160,9 +175,14 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public void baseClickResult(View v) {
+
         switch (v.getId()) {
             case R.id.main_drawerlayout_black:
+
                 mainMapDrawerlayout.closeDrawer(GravityCompat.START);
+                break;
+            case R.id.main_drawerlayout_trip_history_btn:
+                startActivity(new Intent(context, OrderHistoryActivity.class));
                 break;
         }
     }
@@ -195,20 +215,20 @@ public class MainActivity extends BaseActivity {
     }
 
     //跳转 orderStatus页面
-    public void toIntent(OrderBean bean , boolean type){
+    public void toIntent(MqttBeans bean, boolean type) {
         Intent intent = new Intent(MainActivity.this, OrderStatusActivity.class);
-        intent.putExtra("type",type);
+        intent.putExtra("type", type);
         intent.putExtra("order", bean);
         startActivity(intent);
     }
 
 
     @Override
-    public void resultMqttTypePlaceAnOrder(Bean bean) {
-        OrderBean orderBean = (OrderBean) bean;
-        L.d("来订单了:"+orderBean.getMsg().getStartName()+"|"+orderBean.getMsg().getEndName()+"|"+
-        orderBean.getMsg().getTaxiCast());
-        ml.add(orderBean);
+    public void resultMqttTypePlaceAnOrder(MqttBeans bean) {
+
+        L.d("来订单了:" + bean.getContent().getOrder().getStartAddress() + "|" + bean.getContent().getOrder().getEndAddress() + "|" +
+                bean.getContent().getOrder().getEstimatesAmount());
+        ml.add(bean);
         mainRecyclerAdapter.setMl(ml);
         mainRecyclerAdapter.notifyDataSetChanged();
     }
@@ -219,14 +239,14 @@ public class MainActivity extends BaseActivity {
         String msg = (String) obj;
         switch (type) {
             case Config.TAG_DRIVER_ORDER:
-                DriverBean driverBean = gson.fromJson(msg,DriverBean.class);
-                if(getResultStatus(driverBean.getStatus(),msg)){
+                DriverBean driverBean = gson.fromJson(msg, DriverBean.class);
+                if (getResultStatus(driverBean.getStatus(), msg)) {
 
-                Map<String, Object> determine = new WeakHashMap<>();
-                determine.put("status", true);
-                determine.put("type", Config.MQTT_TYPE_PLACE_AN_ORDER);
-                sendMqttMessage(Config.sendTopic, 1, new JSONObject(determine).toString());
-                toIntent(bean,ORDER_SUMBIT);
+//                    Map<String, Object> determine = new WeakHashMap<>();
+//                    determine.put("status", true);
+//                    determine.put("type", Config.MQTT_TYPE_PLACE_AN_ORDER);
+//                    sendMqttMessage(Config.sendTopic, 1, new JSONObject(determine).toString());
+                    toIntent(bean, ORDER_SUMBIT);
 
                 }
                 break;
@@ -238,4 +258,18 @@ public class MainActivity extends BaseActivity {
         TrustServer.baseActivity = this;
         super.onResume();
     }
+
+
+    public static double myLat = 31.232185,myLon = 121.413141;
+
+    public static LocationInterface locationInterface = new LocationInterface() {
+        @Override
+        public void getLocation(Location location) {
+            if (location != null){
+                myLat = TrustTools.round(location.getLatitude(),6);
+                myLon = TrustTools.round(location.getLongitude(),6);
+            }
+//            L.d("myLat:"+myLat+"|myLon:"+myLon);
+        }
+    };
 }
