@@ -1,5 +1,7 @@
 package com.trust.shengyu.calltaxidriver.activitys.orderstatus;
 
+import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -20,6 +22,7 @@ import com.trust.shengyu.calltaxidriver.tools.beans.DriverBean;
 import com.trust.shengyu.calltaxidriver.tools.beans.MqttBeans;
 import com.trust.shengyu.calltaxidriver.tools.beans.OrderBean;
 import com.trust.shengyu.calltaxidriver.tools.beans.RefusedOrderBean;
+import com.trust.shengyu.calltaxidriver.tools.beans.SelectOrdersBean;
 import com.trust.shengyu.calltaxidriver.tools.dialog.TrustDialog;
 
 import org.json.JSONObject;
@@ -55,7 +58,8 @@ public class OrderStatusActivity extends BaseActivity {
     private MapView mapView;
     private String orderNo;
     private String CancelMsg;
-
+    private int RESULT_CODE = 2;
+    private int orderStatus;//
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +69,12 @@ public class OrderStatusActivity extends BaseActivity {
         mapView.onCreate(savedInstanceState);// 此方法必须重写
         init();
         initView();
+
+//        Map<String,Object> map = new WeakHashMap<>();
+//        map.put("driver",Config.driver);
+//        map.put("status",Config.Driver);
+//        requestCallBeack(Config.SERACH_EXECUTE_ORDER,map,Config.TAG_SERACH_EXECUTE_ORDER,
+//                trustRequest.GET,Config.token);
     }
 
 
@@ -73,17 +83,69 @@ public class OrderStatusActivity extends BaseActivity {
         if (type) {
             //跳转查看详细信息 选择是否接单
             orderStatusOrderChooseLayout.setVisibility(View.VISIBLE);
+            orderStatusCancel.setVisibility(View.INVISIBLE);
+            orderStatusOrderStart.setVisibility(View.INVISIBLE);
         } else {
             //抢单后,跳转
             orderStatusOrderChooseLayout.setVisibility(View.GONE);
         }
-        MqttBeans bean = (MqttBeans) getIntent().getSerializableExtra("order");
-        orderNo = bean.getContent().getOrder().getOrderNo();
-        if (bean != null) {
-            orderStatusOrderStartTv.setText(bean.getContent().getOrder().getStartAddress());
-            orderStatusOrderEndTv.setText(bean.getContent().getOrder().getEndAddress());
-            orderStatusOrderCost.setText(bean.getContent().getOrder().getEstimateDuration() + "");
+        orderStatus = getIntent().getIntExtra("orderStatus",-1);
+
+        switch (orderStatus) {
+            case Config.OrderStatusBooked://下单成功 没有推送给司机
+            case Config.OrderStatusDelivery://异常退出 下单成功 推送给司机
+                orderNo = getIntent().getStringExtra("orderNo");
+                break;
+            case Config.OrderStatusOrders://异常退出 司机已经接单
+                orderNo = getIntent().getStringExtra("orderNo");
+                L.d("司机已经接单");
+                //抢单后,跳转
+                orderStatusOrderChooseLayout.setVisibility(View.GONE);
+                break;
+            case Config.OrderStatusStartOrders://异常退出 司机开始订单
+                L.d("司机开始订单");
+                break;
+            case Config.OrderStatusEndOrders://异常退出 司机结束订单
+                orderNo = getIntent().getStringExtra("orderNo");
+                L.d("司机结束订单"+orderNo);
+                break;
+            case Config.OrderStatusPayments://异常退出  正在支付
+                L.d("正在支付");
+                break;
+            case Config.OrderStatusPaymentsSuccess://异常退出  支付成功
+                L.d("支付成功");
+                break;
+            case Config.OrderStatusPaymentsError://异常退出  支付失败
+                L.d("支付失败");
+                break;
+            case Config.OrderStatusCancelClientOrder://异常退出  客户取消订单
+                L.d("客户取消订单");
+                break;
+            case Config.OrderStatusCancelDriverOrder://异常退出 司机取消订单
+                L.d("司机取消订单");
+                break;
         }
+
+
+        //正常接单跳转
+        if(getIntent().getSerializableExtra("order") instanceof MqttBeans ){
+            MqttBeans bean = (MqttBeans) getIntent().getSerializableExtra("order");
+            orderNo = bean.getContent().getOrder().getOrderNo();
+            if (bean != null) {
+                orderStatusOrderStartTv.setText(bean.getContent().getOrder().getStartAddress());
+                orderStatusOrderEndTv.setText(bean.getContent().getOrder().getEndAddress());
+                orderStatusOrderCost.setText(bean.getContent().getOrder().getEstimateDuration() + "");
+            }
+        }else if(getIntent().getSerializableExtra("order") instanceof SelectOrdersBean){
+            SelectOrdersBean bean = (SelectOrdersBean) getIntent().getSerializableExtra("order");
+            orderNo = bean.getContent().getOrderNo();
+            if (bean != null) {
+                orderStatusOrderStartTv.setText(bean.getContent().getStartAddress());
+                orderStatusOrderEndTv.setText(bean.getContent().getEndAddress());
+                orderStatusOrderCost.setText(bean.getContent().getEstimateDuration() + "");
+            }
+        }
+
     }
 
 
@@ -92,6 +154,7 @@ public class OrderStatusActivity extends BaseActivity {
         baseSetOnClick(orderStatusOrderStart);
         baseSetOnClick(orderStatusOrderEnd);
         baseSetOnClick(orderStatusCancel);
+        baseSetOnClick(orderStatusOrderFinish);
     }
 
     @Override
@@ -102,9 +165,9 @@ public class OrderStatusActivity extends BaseActivity {
         switch (v.getId()) {
             case R.id.order_status_order_determine:
                 Map<String, Object> determineMap = new WeakHashMap<>();
-                map.put("orderNo", orderNo);
-                map.put("receiveTime", TrustTools.getSystemTimeData());
-                map.put("driver", Config.driver+"");
+                determineMap.put("orderNo", orderNo);
+                determineMap.put("receiveTime", TrustTools.getSystemTimeData());
+                determineMap.put("driver", Config.driver+"");
                 requestCallBeack(Config.DRIVER_ORDER, determineMap, Config.TAG_DRIVER_ORDER, trustRequest.POST,Config.token);
                 break;
             case R.id.order_status_order_start:
@@ -158,7 +221,7 @@ public class OrderStatusActivity extends BaseActivity {
                             map.put("msg", msg);
                             sendMqttMessage(Config.sendTopic, 1, new JSONObject(map).toString());
                             */
-                            finish();
+
                         }else{
                             L.e("拒绝订单原因为null");
                         }
@@ -168,9 +231,17 @@ public class OrderStatusActivity extends BaseActivity {
 
 
             case R.id.order_status_finish:
-                finish();
+                reslutFinish(Config.ORDER_STATUS_READ);//读过 但是没接单
                 break;
         }
+    }
+
+    private void reslutFinish(int type) {
+        Intent rIntent = new Intent();
+        rIntent.putExtra("orderOn", orderNo);
+        rIntent.putExtra("orderStatus", type);
+        setResult(RESULT_CODE, rIntent);
+        finish();
     }
 
 
@@ -219,32 +290,21 @@ public class OrderStatusActivity extends BaseActivity {
             case Config.TAG_DRIVER_START_ORDER:
                 DiverOrderBean diverOrderBean = gson.fromJson(msg,DiverOrderBean.class);
                 if(getResultStatus(diverOrderBean.getStatus(),msg)){
-                    L.d("开始成功");
-                    Map<String, Object> map = new WeakHashMap<>();
-                    map.put("status", true);
-                    map.put("time", TrustTools.getSystemTimeString());
-                    map.put("type", Config.MQTT_TYPE_START_ORDER);
-                    sendMqttMessage(Config.sendTopic, 1, new JSONObject(map).toString());
+                    orderStatusCancel.setVisibility(View.INVISIBLE);
+                    orderStatusOrderStart.setVisibility(View.GONE);
+                    orderStatusOrderEnd.setVisibility(View.VISIBLE);
                 }
                 break;
 
             case Config.TAG_DRIVER_END_ORDER:
-                final Map<String, Object> map = new WeakHashMap<>();
-                map.put("status", true);
-                map.put("time", TrustTools.getSystemTimeString());
-                map.put("type", Config.MQTT_TYPE_END_ORDER);
-                sendMqttMessage(Config.sendTopic, 1, new JSONObject(map).toString());
+                showToast("订单结束");
+                reslutFinish(Config.ORDER_STATUS_END);//订单结束
                 break;
 
             case Config.TAG_CANCEL_ORDER:
                 CancelOrderBean cancelOrderBean = gson.fromJson(msg,CancelOrderBean.class);
                 if (getResultStatus(cancelOrderBean.getStatus(),msg)) {
-                    final Map<String, Object> canCelMap = new WeakHashMap<>();
-                    canCelMap.put("status", true);
-                    canCelMap.put("time", TrustTools.getSystemTimeString());
-                    canCelMap.put("type", Config.MQTT_TYPE_REFUSED_ORDER);
-                    canCelMap.put("msg", CancelMsg);
-                    sendMqttMessage(Config.sendTopic, 1, new JSONObject(canCelMap).toString());
+                  reslutFinish(Config.ORDER_STATUS_CANCEL);//取消订单
                 }
 
                 break;
@@ -253,6 +313,8 @@ public class OrderStatusActivity extends BaseActivity {
                 DriverBean driverBean = gson.fromJson(msg, DriverBean.class);
                 if (getResultStatus(driverBean.getStatus(), msg)) {
                     orderStatusOrderChooseLayout.setVisibility(View.GONE);
+                    orderStatusOrderStart.setVisibility(View.VISIBLE);
+                    orderStatusCancel.setVisibility(View.VISIBLE);
                 }
                 break;
         }
@@ -261,6 +323,13 @@ public class OrderStatusActivity extends BaseActivity {
     @Override
     public void resultMqttTypeRefusedOrder(RefusedOrderBean bean) {
         L.d("|resultMqttTypeRefusedOrder");
-        trustDialog.showErrorOrderDialog(this,bean.getContent().getOrder().getRemark());
+        final Dialog dialog = trustDialog.showErrorOrderDialog(this, bean.getContent().getOrder().getRemark());
+        trustDialog.setErrorOrderDialogListener(new TrustDialog.onErrorOrderDialogListener() {
+            @Override
+            public void CallBack() {
+                dialog.dismiss();
+                reslutFinish(Config.ORDER_STATUS_CANCEL);
+            }
+        });
     }
 }

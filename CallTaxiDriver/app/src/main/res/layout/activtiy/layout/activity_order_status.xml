@@ -21,7 +21,7 @@
             android:id="@+id/order_status_base_map_layout"
             layout="@layout/map_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent" />
 
 
         <LinearLayout
@@ -86,21 +86,22 @@
                         </LinearLayout>
 
                         <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:layout_marginLeft="@dimen/x10"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
                             android:orientation="vertical">
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/ic_phone_do" />
+
+                            <ImageView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/ic_phone_do" />
 
 
                             <Button
-                                android:text="取消订单"
                                 android:id="@+id/order_status_cancel"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" />
+                                android:layout_height="wrap_content"
+                                android:text="取消订单" />
                         </LinearLayout>
 
 
@@ -192,72 +193,71 @@
                         android:orientation="horizontal">
 
                         <LinearLayout
-                            android:gravity="center"
-                            android:orientation="vertical"
                             android:layout_width="0dp"
+                            android:layout_height="match_parent"
                             android:layout_weight="1"
-                            android:layout_height="match_parent">
+                            android:gravity="center"
+                            android:orientation="vertical">
 
                             <TextView
-                                android:text="预估价格"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" />
+                                android:layout_height="wrap_content"
+                                android:text="预估价格" />
 
                             <LinearLayout
-                                android:orientation="horizontal"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content">
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
 
-
-                            <TextView
-                                android:id="@+id/order_status_order_cost"
-                                android:text="30"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" />
 
                                 <TextView
-                                    android:text="元"
+                                    android:id="@+id/order_status_order_cost"
                                     android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content" />
+                                    android:layout_height="wrap_content"
+                                    android:text="30" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="元" />
                             </LinearLayout>
                         </LinearLayout>
 
                         <View
                             android:layout_width="1dp"
                             android:layout_height="match_parent"
-                            android:background="#c4c4c4"/>
+                            android:background="#c4c4c4" />
 
 
                         <LinearLayout
-                            android:gravity="center"
-                            android:orientation="vertical"
                             android:layout_width="0dp"
+                            android:layout_height="match_parent"
                             android:layout_weight="1"
-                            android:layout_height="match_parent">
+                            android:gravity="center"
+                            android:orientation="vertical">
 
                             <TextView
-                                android:text="距离顾客"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" />
+                                android:layout_height="wrap_content"
+                                android:text="距离顾客" />
 
                             <LinearLayout
-                                android:orientation="horizontal"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content">
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
 
 
                                 <TextView
-                                    android:text="2.5"
                                     android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content" />
+                                    android:layout_height="wrap_content"
+                                    android:text="2.5" />
 
                                 <TextView
-                                    android:text="公里"
                                     android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content" />
+                                    android:layout_height="wrap_content"
+                                    android:text="公里" />
                             </LinearLayout>
                         </LinearLayout>
-
 
 
                     </LinearLayout>
@@ -272,17 +272,17 @@
 
                         <Button
                             android:id="@+id/order_status_order_determine"
-                            android:text="接单"
                             android:layout_width="0dp"
+                            android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:layout_height="wrap_content" />
+                            android:text="接单" />
 
                         <Button
                             android:id="@+id/order_status_finish"
-                            android:text="取消"
                             android:layout_width="0dp"
+                            android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:layout_height="wrap_content" />
+                            android:text="取消" />
                     </LinearLayout>
 
                 </LinearLayout>
@@ -292,32 +292,29 @@
         </LinearLayout>
 
 
-
         <LinearLayout
-            android:layout_centerHorizontal="true"
-            android:layout_alignParentBottom="true"
-            android:orientation="vertical"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:orientation="vertical">
 
             <Button
                 android:id="@+id/order_status_order_start"
-                android:text="开始"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:text="开始" />
 
             <Button
                 android:id="@+id/order_status_order_end"
-                android:text="结束"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:text="结束"
+                android:visibility="gone" />
 
         </LinearLayout>
 
     </RelativeLayout>
-
-
-
 
 
 </LinearLayout>

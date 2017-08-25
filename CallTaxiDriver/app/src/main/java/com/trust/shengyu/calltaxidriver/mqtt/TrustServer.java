@@ -67,7 +67,7 @@ public class TrustServer extends Service {
         if (callTaxiCommHelper == null) {
             callTaxiCommHelper = new CallTaxiCommHelper(context);
             callTaxiCommHelper.setOnMqttCallBackResultListener(onMqttCallBackResultListener);
-            callTaxiCommHelper.doClientConnection();
+
             gson = new Gson();
             handler.sendEmptyMessageDelayed(1,1000 * 10);
         }
@@ -82,6 +82,11 @@ public class TrustServer extends Service {
         gpsHandler = gpsHelper.getHandler();
         gpsHelper.setTrustServer(this);
 
+    }
+
+
+    public void doClientConnectionMqtt(){
+        callTaxiCommHelper.doClientConnection();
     }
 
     //mqtt 收到push 回调

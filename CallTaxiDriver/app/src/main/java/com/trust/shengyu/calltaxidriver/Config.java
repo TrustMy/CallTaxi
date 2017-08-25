@@ -40,9 +40,9 @@ public class Config {
     public final static int MQTT_TYPE_CONNECTION_EXCEPTION = 0x005;//连接断开
     public final static int MQTT_TYPE_CONNECTION_SUCCESS = 0x006;//连接成功
 
-
+    //映射 http://192.168.1.111:8082/SYCloudPlatform-1.0   //本地  http://192.168.1.134:8082
     //------------------------服务器接口--------------------------------
-    public static String SERVER_URL = "http://192.168.1.134:8082";//服务器地址
+    public static String SERVER_URL = "http://192.168.1.111:8082/SYCloudPlatform-1.0";//服务器地址
     public static String PLACE_AN_ORDER = "/rest/book";//下订单
     public static String CANCEL_ORDER = "/rest/cancel";//取消订单
     public static String SERACH_EXECUTE_ORDER = "/rest/executing";//查询正在执行订单
@@ -63,7 +63,7 @@ public class Config {
     public static final int TAG_DRIVER_ORDER = 0x00003;//接单订单
     public static final int TAG_DRIVER_START_ORDER = 0x00004;//开始订单
     public static final int TAG_DRIVER_END_ORDER = 0x00005;//结束订单
-    public static final int TAG_SERACH_EXECUTE_ORDER = 0x00005;//查询正在进行的订单
+    public static final int TAG_SERACH_EXECUTE_ORDER = 0x00009;//查询正在进行的订单
     public static final int TAG_SERACH_HISTORY_ORDER_PAGING = 0x00006;//分页查询订单
     public static final int TAG_DRIVER_GET_TOKEN = 0x00007;//获取司机token
     public static final int TAG_DRIVER_INFORMATION = 0x00008;//获取司机信息
@@ -101,5 +101,9 @@ public class Config {
     public static int UserTypeDriver = 2;//登录司机唯一标示
     public static int Driver = 1;//下单操作司机唯一标示
 
+
+    public static final int ORDER_STATUS_READ = 1;//只是查看过订单
+    public static final int ORDER_STATUS_CANCEL = 2;//取消订单
+    public static final int ORDER_STATUS_END = 3;//结束订单
 
 }

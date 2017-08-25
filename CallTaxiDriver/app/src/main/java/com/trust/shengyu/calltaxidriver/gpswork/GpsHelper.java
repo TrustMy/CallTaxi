@@ -344,8 +344,8 @@ public class GpsHelper implements Runnable {
                 map.put("serialNo",TrustTools.getSystemTimeData());
                 map.put("terminalId",Config.Customer);
                 map.put("driver",Config.driver);
-                map.put("lat",gpsLocation.getLatitude() );
-                map.put("lon",gpsLocation.getLongitude() );
+                map.put("lat", TrustTools.round(gpsLocation.getLatitude(),6));
+                map.put("lon",TrustTools.round(gpsLocation.getLongitude(),6));
                 map.put("alt",gpsLocation.getAltitude());
                 map.put("speed",speed);
                 map.put("bear",gpsLocation.getBearing());
@@ -356,7 +356,7 @@ public class GpsHelper implements Runnable {
 
                 MainActivity.locationInterface.getLocation(gpsLocation);
             }
-//            Log.i("lh", "当前坐标 location.getLatitude():" + location.getLatitude() + "location.getLongitude() :" + location.getLongitude());
+            Log.i("lh", "当前坐标 location.getLatitude():" + location.getLatitude() + "location.getLongitude() :" + location.getLongitude());
         }
     };
 

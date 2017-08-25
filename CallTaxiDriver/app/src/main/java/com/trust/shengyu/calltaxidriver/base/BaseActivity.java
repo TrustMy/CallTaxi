@@ -27,6 +27,7 @@ import com.trust.shengyu.calltaxidriver.mqtt.TrustServer;
 import com.trust.shengyu.calltaxidriver.mqtt.network.CallTaxiCommHelper;
 import com.trust.shengyu.calltaxidriver.tools.L;
 import com.trust.shengyu.calltaxidriver.tools.beans.Bean;
+import com.trust.shengyu.calltaxidriver.tools.beans.ErrorBean;
 import com.trust.shengyu.calltaxidriver.tools.beans.MqttBeans;
 import com.trust.shengyu.calltaxidriver.tools.beans.MqttResultBean;
 import com.trust.shengyu.calltaxidriver.tools.beans.OrderBean;
@@ -181,6 +182,10 @@ public abstract class BaseActivity extends AppCompatActivity {
             return true;
         }else{
             L.e("error message :"+msg);
+            ErrorBean bean = gson.fromJson(msg,ErrorBean.class);
+            if (bean != null) {
+                showToast(bean.getInfo());
+            }
             return false;
         }
     }
@@ -220,13 +225,18 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     //网络请求回调
 
-    public void resultCallBeack(Object obj,int type,int status){
+    public void resultCallBeack(final Object obj, final int type, final int status){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(status == Config.SUCCESS){
+                    successCallBeack(obj,type);
+                }else{
+                    errorCallBeack(obj,type);
+                }
+            }
+        });
 
-        if(status == Config.SUCCESS){
-            successCallBeack(obj,type);
-        }else{
-            errorCallBeack(obj,type);
-        }
 
 
     }
@@ -312,15 +322,21 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     }
 
-    protected void showToast(String msg){
-        if (toast == null) {
-            toast = Toast.makeText(context,
-                    msg,
-                    Toast.LENGTH_SHORT);
-        } else {
-            toast.setText(msg);
-        }
-        toast.show();
+    protected void showToast(final String msg){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (toast == null) {
+                    toast = Toast.makeText(context,
+                            msg,
+                            Toast.LENGTH_SHORT);
+                } else {
+                    toast.setText(msg);
+                }
+                toast.show();
+            }
+        });
+
     }
     Snackbar snackbar;
     protected void showSnackbar(View v,String description,String msg){

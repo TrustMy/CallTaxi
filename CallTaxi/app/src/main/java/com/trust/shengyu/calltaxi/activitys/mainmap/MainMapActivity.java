@@ -1,5 +1,6 @@
 package com.trust.shengyu.calltaxi.activitys.mainmap;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
@@ -42,6 +43,9 @@ import com.trust.shengyu.calltaxi.base.BaseActivity;
 import com.trust.shengyu.calltaxi.tools.L;
 import com.trust.shengyu.calltaxi.tools.TrustTools;
 import com.trust.shengyu.calltaxi.tools.beans.PlaceAnOrderBean;
+import com.trust.shengyu.calltaxi.tools.beans.RefusedOrderBean;
+import com.trust.shengyu.calltaxi.tools.beans.SelectOrdersBean;
+import com.trust.shengyu.calltaxi.tools.dialog.TrustDialog;
 import com.trust.shengyu.calltaxi.tools.gdgps.ConversionLocation;
 import com.trust.shengyu.calltaxi.tools.gdgps.Maker;
 import com.trust.shengyu.calltaxi.tools.gdgps.Positioning;
@@ -122,6 +126,9 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
 
         initMap();
         initView();
+        mqttServer.doClientConnection();
+
+
 //        if(mqttServer.resultOrderTaskQueue()){
 //            startActivity(new Intent(context,OrderStatusActivity.class));
 //        }
@@ -199,6 +206,12 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
 //                trustDialog.showOrderDialog(Config.activity, mainMapStartTv.getText().toString(), mainMapEndTv.getText().toString(), (int) money);
             }
         });
+
+        Map<String,Object> map = new WeakHashMap<>();
+        map.put("driver",Config.CustomerId);
+        map.put("status",Config.User);
+        requestCallBeack(Config.SERACH_EXECUTE_ORDER,map,Config.TAG_SERACH_EXECUTE_ORDER,
+                trustRequest.GET,Config.token);
     }
 
     @Override
@@ -533,33 +546,35 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
                     orderNo = placeAnOrderBean.getContent().getOrderNo();
                     orderStatus = placeAnOrderBean.getContent().getStatus();
 
-
-                    Map<String,Object>  test = new WeakHashMap<>();
-                    Map<String,Object>  ttttt = new WeakHashMap<>();
-
-
-                    test.put("startName", startName);
-                    test.put("endName", endName);
-                    test.put("taxiCast", taxiCast);
-                    test.put("orderNo", orderNo);
-
-                    ttttt.put("type", Config.MQTT_TYPE_PLACE_AN_ORDER);
-                    ttttt.put("status", true);
-                    ttttt.put("msg", test);
-                    ttttt.put("time", TrustTools.getSystemTimeString());
-//                    sendMqttMessage(Config.sendTopic, 1, new JSONObject(ttttt).toString());
-
-
                     L.d("下单成功:"+orderNo);
-                    Intent intent = new Intent(MainMapActivity.this,OrderStatusActivity.class);
-                    intent.putExtra("orderStatus",
-                            orderStatus);
-                    intent.putExtra("orderNo",
-                            orderNo);
-                    startActivity(intent);
+                    toIntent();
                 }
                 break;
+
+            case Config.TAG_SERACH_EXECUTE_ORDER:
+                String orderMsg = null;
+                SelectOrdersBean selectOrdersBean = gson.fromJson(msg,SelectOrdersBean.class);
+                if(getResultStatus(selectOrdersBean.getStatus(),msg)){
+                    if (selectOrdersBean.getContent() != null) {
+                        orderNo = selectOrdersBean.getContent().getOrderNo();
+                        orderStatus = selectOrdersBean.getContent().getStatus();
+                        toIntent();
+                    }else{
+                        L.e("没有正在进行的订单");
+                    }
+                }
+                L.d("订单状态:"+orderMsg);
+                break;
         }
+    }
+
+    private void toIntent() {
+        Intent intent = new Intent(MainMapActivity.this,OrderStatusActivity.class);
+        intent.putExtra("orderStatus",
+                orderStatus);
+        intent.putExtra("orderNo",
+                orderNo);
+        startActivity(intent);
     }
 
     private static double myLat = 31.232185,myLon = 121.413141;
@@ -575,4 +590,18 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
             L.d("myLat:"+myLat+"|myLon:"+myLon);
         }
     };
+
+
+    @Override
+    public void resultMqttTypeRefusedOrder(RefusedOrderBean bean) {
+        L.e("司机拒绝接单");
+        showSnackbar(mapView, "司机拒绝:", null);
+        final Dialog dialog = trustDialog.showErrorOrderDialog(this, bean.getContent().getOrder().getRemark());
+        trustDialog.setErrorOrderDialogListener(new TrustDialog.onErrorOrderDialogListener() {
+            @Override
+            public void CallBack() {
+                dialog.dismiss();
+            }
+        });
+    }
 }

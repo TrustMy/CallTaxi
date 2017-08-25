@@ -130,7 +130,7 @@ public  class MqttCommHelper {
 
         @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
-            dbManager.addData("接收到的"+new String(message.getPayload())+"|"+ TrustTools.getSystemTimeString());
+//            dbManager.addData("接收到的"+new String(message.getPayload())+"|"+ TrustTools.getSystemTimeString());
             mqttResultCallBack.CallBack(topic,new String(message.getPayload()));
         }
 
@@ -275,14 +275,12 @@ public  class MqttCommHelper {
 
     public  void publish(String topic ,Integer qos  ,String msg){
         synchronized (this){
-
-
             if( client!=null){
                 //端口  8878   注册
                 Boolean retained = false;
                 if(!pushStatus && msg != null){
                     try {
-//                        L.d("publish :"+msg);
+                        L.d("publish :"+msg);
                         client.publish(topic, msg.getBytes(), qos.intValue(), retained.booleanValue());
 //                        dbManager.addData("发送的json:"+msg+"|"+TrustTools.getSystemTimeString());
                     } catch (MqttException e) {

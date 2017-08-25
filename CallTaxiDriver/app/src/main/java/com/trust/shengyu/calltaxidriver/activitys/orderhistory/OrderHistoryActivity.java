@@ -37,13 +37,7 @@ public class OrderHistoryActivity extends BaseActivity {
         initView();
         initData();
 
-        Map<String,Object> map = new WeakHashMap<>();
-        map.put("driver", Config.Customer);
-        map.put("indexPage",indexPage);
-        map.put("status",Config.UserTypeDriver);
 
-        requestCallBeack(Config.SERACH_HISTORY_ORDER_PAGING,map,Config.TAG_SERACH_HISTORY_ORDER_PAGING
-                ,trustRequest.GET,Config.token);
     }
 
 

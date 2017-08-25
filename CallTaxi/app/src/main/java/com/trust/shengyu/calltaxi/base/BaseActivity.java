@@ -32,6 +32,7 @@ import com.trust.shengyu.calltaxi.tools.L;
 import com.trust.shengyu.calltaxi.tools.beans.Bean;
 import com.trust.shengyu.calltaxi.tools.beans.MqttResultBean;
 import com.trust.shengyu.calltaxi.tools.beans.MqttTypePlaceAnOrder;
+import com.trust.shengyu.calltaxi.tools.beans.NObodyOrderBean;
 import com.trust.shengyu.calltaxi.tools.beans.RefusedOrderBean;
 import com.trust.shengyu.calltaxi.tools.dialog.TrustDialog;
 import com.trust.shengyu.calltaxi.tools.gdgps.DrawLiner;
@@ -196,6 +197,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     public  void resultMqttTypeRefusedOrder(RefusedOrderBean bean){L.d("resultMqttTypeRefusedOrder");};
     //未知消息回调
     public  void resultMqttTypeOther(MqttTypePlaceAnOrder bean){};
+    //无人接单回调
+    public void resultMqttTypeNobodyOrder(NObodyOrderBean bean){};
     //发送mqtt消息
     public void sendMqttMessage(String topic ,int qos , String msg){
         if(mqttConnectionStatus){

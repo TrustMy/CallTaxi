@@ -1,6 +1,7 @@
 package com.trust.shengyu.calltaxidriver.activitys;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.trust.shengyu.calltaxidriver.Config;
 import com.trust.shengyu.calltaxidriver.R;
 import com.trust.shengyu.calltaxidriver.activitys.orderhistory.OrderHistoryAdatper;
 import com.trust.shengyu.calltaxidriver.base.BaseRecyclerViewAdapter;
@@ -43,6 +45,27 @@ public class MainRecyclerAdapter extends BaseRecyclerViewAdapter {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         MainRecycler mainRecycler = (MainRecycler) holder;
         List<MqttBeans> orderBeanList = ml;
+        if(orderBeanList.get(position).isSeeStatus()){
+            mainRecycler.orderSubmit.setBackgroundColor(Color.parseColor("#c4c4c4"));
+        }
+        switch (orderBeanList.get(position).getOrderStatus()) {
+            case Config.ORDER_STATUS_READ://只是读过订单
+                mainRecycler.orderSubmit.setText("已阅览");
+                mainRecycler.orderSubmit.setBackgroundColor(Color.parseColor("#f3ce1d"));
+                break;
+            case Config.ORDER_STATUS_CANCEL://取消订单了
+                mainRecycler.orderSubmit.setText("已取消");
+                mainRecycler.orderSubmit.setEnabled(false);//不可点击
+                mainRecycler.itemView.setEnabled(false);
+                break;
+            case Config.ORDER_STATUS_END://订单已经结束了
+                mainRecycler.orderSubmit.setText("已结束");
+                mainRecycler.orderSubmit.setEnabled(false);//不可点击
+                mainRecycler.itemView.setEnabled(false);
+                break;
+        }
+
+
         mainRecycler.orderStartTv.setText(orderBeanList.get(position).getContent().getOrder().getStartAddress());
         mainRecycler.orderEndTv.setText(orderBeanList.get(position).getContent().getOrder().getEndAddress());
         mainRecycler.orderFareTv.setText("+"+orderBeanList.get(position).getContent().getOrder().getEstimatesAmount()+"");

@@ -1,46 +1,22 @@
-package com.trust.shengyu.calltaxidriver.tools.beans;
-
-import java.io.Serializable;
+package com.trust.shengyu.calltaxi.tools.beans;
 
 /**
- * Created by Trust on 2017/8/22.
+ * Created by Trust on 2017/8/24.
  */
 
-public class MqttBeans  extends  Bean implements Serializable {
+public class NObodyOrderBean  {
 
     /**
-     * status : 1
-     * info : 司机消息推送成功
+     * status : 0
+     * info : 没有匹配到合适司机
      * type : 1
-     * content : {"customer":{"uid":14,"nickName":"W2J27RJC97","customerId":5001,"sex":0,"cellPhone":"13892929789","password":"111111","status":0,"token":"MS8gxxR9lhjv/jEvcCx6ReXedZifXv6JLRCuaOE6fF1LzVdJSI7N0ZCRjpn++i9r","regTime":"Aug 22, 2017 3:22:42 PM","updateTime":"Aug 22, 2017 6:20:10 PM"},"order":{"uid":23,"orderNo":"201708221820280004","locationLat":31.232044,"locationLng":121.412728,"startAddress":"上海市普陀区白玉路10号靠近普陀长风开业园区","endAddress":"浦东新区","customer":"5001","status":0,"estimateDuration":2000,"estimatesAmount":4.5,"createTime":"Aug 22, 2017 6:20:28 PM"}}
+     * content : {"customer":{"uid":14,"nickName":"W2J27RJC97","customerId":5001,"sex":0,"cellPhone":"13892929789","password":"111111","status":0,"token":"MS8gxxR9lhjv/jEvcCx6RdsjbSZXhF5uxgkxX3n+iHR/aME7NbaVpYjSDXyFODSK","regTime":"Aug 22, 2017 3:22:42 PM","updateTime":"Aug 24, 2017 10:17:25 AM"},"order":{"uid":101,"orderNo":"201708241017440000","locationLat":31.232185,"locationLng":121.413141,"startAddress":"上海市普陀区顺义路10号靠近普陀长风开业园区","endAddress":"天安门","customer":"5001","status":0,"estimateDuration":2000,"estimatesAmount":4521.1,"createTime":"Aug 24, 2017 10:17:44 AM"}}
      */
 
     private int status;
     private String info;
     private int type;
     private ContentBean content;
-    private boolean seeStatus = false;
-    private int orderStatus = -1;
-
-    public int getOrderStatus() {
-        return orderStatus;
-    }
-
-    public void setOrderStatus(int orderStatus) {
-        this.orderStatus = orderStatus;
-    }
-
-    public boolean isSeeStatus() {
-        return seeStatus;
-    }
-
-    public void setSeeStatus(boolean seeStatus) {
-        this.seeStatus = seeStatus;
-    }
-
-    public int getStatus() {
-        return status;
-    }
 
     public void setStatus(int status) {
         this.status = status;
@@ -58,6 +34,9 @@ public class MqttBeans  extends  Bean implements Serializable {
         this.content = content;
     }
 
+    public int getStatus() {
+        return status;
+    }
 
     public String getInfo() {
         return info;
@@ -71,10 +50,10 @@ public class MqttBeans  extends  Bean implements Serializable {
         return content;
     }
 
-    public static class ContentBean implements Serializable{
+    public static class ContentBean {
         /**
-         * customer : {"uid":14,"nickName":"W2J27RJC97","customerId":5001,"sex":0,"cellPhone":"13892929789","password":"111111","status":0,"token":"MS8gxxR9lhjv/jEvcCx6ReXedZifXv6JLRCuaOE6fF1LzVdJSI7N0ZCRjpn++i9r","regTime":"Aug 22, 2017 3:22:42 PM","updateTime":"Aug 22, 2017 6:20:10 PM"}
-         * order : {"uid":23,"orderNo":"201708221820280004","locationLat":31.232044,"locationLng":121.412728,"startAddress":"上海市普陀区白玉路10号靠近普陀长风开业园区","endAddress":"浦东新区","customer":"5001","status":0,"estimateDuration":2000,"estimatesAmount":4.5,"createTime":"Aug 22, 2017 6:20:28 PM"}
+         * customer : {"uid":14,"nickName":"W2J27RJC97","customerId":5001,"sex":0,"cellPhone":"13892929789","password":"111111","status":0,"token":"MS8gxxR9lhjv/jEvcCx6RdsjbSZXhF5uxgkxX3n+iHR/aME7NbaVpYjSDXyFODSK","regTime":"Aug 22, 2017 3:22:42 PM","updateTime":"Aug 24, 2017 10:17:25 AM"}
+         * order : {"uid":101,"orderNo":"201708241017440000","locationLat":31.232185,"locationLng":121.413141,"startAddress":"上海市普陀区顺义路10号靠近普陀长风开业园区","endAddress":"天安门","customer":"5001","status":0,"estimateDuration":2000,"estimatesAmount":4521.1,"createTime":"Aug 24, 2017 10:17:44 AM"}
          */
 
         private CustomerBean customer;
@@ -96,7 +75,7 @@ public class MqttBeans  extends  Bean implements Serializable {
             return order;
         }
 
-        public static class CustomerBean implements Serializable{
+        public static class CustomerBean {
             /**
              * uid : 14
              * nickName : W2J27RJC97
@@ -105,9 +84,9 @@ public class MqttBeans  extends  Bean implements Serializable {
              * cellPhone : 13892929789
              * password : 111111
              * status : 0
-             * token : MS8gxxR9lhjv/jEvcCx6ReXedZifXv6JLRCuaOE6fF1LzVdJSI7N0ZCRjpn++i9r
+             * token : MS8gxxR9lhjv/jEvcCx6RdsjbSZXhF5uxgkxX3n+iHR/aME7NbaVpYjSDXyFODSK
              * regTime : Aug 22, 2017 3:22:42 PM
-             * updateTime : Aug 22, 2017 6:20:10 PM
+             * updateTime : Aug 24, 2017 10:17:25 AM
              */
 
             private int uid;
@@ -202,19 +181,19 @@ public class MqttBeans  extends  Bean implements Serializable {
             }
         }
 
-        public static class OrderBean implements Serializable{
+        public static class OrderBean {
             /**
-             * uid : 23
-             * orderNo : 201708221820280004
-             * locationLat : 31.232044
-             * locationLng : 121.412728
-             * startAddress : 上海市普陀区白玉路10号靠近普陀长风开业园区
-             * endAddress : 浦东新区
+             * uid : 101
+             * orderNo : 201708241017440000
+             * locationLat : 31.232185
+             * locationLng : 121.413141
+             * startAddress : 上海市普陀区顺义路10号靠近普陀长风开业园区
+             * endAddress : 天安门
              * customer : 5001
              * status : 0
              * estimateDuration : 2000
-             * estimatesAmount : 4.5
-             * createTime : Aug 22, 2017 6:20:28 PM
+             * estimatesAmount : 4521.1
+             * createTime : Aug 24, 2017 10:17:44 AM
              */
 
             private int uid;

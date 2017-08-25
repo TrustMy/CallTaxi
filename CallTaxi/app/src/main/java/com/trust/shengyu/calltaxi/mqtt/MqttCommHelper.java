@@ -129,7 +129,7 @@ public abstract class MqttCommHelper {
 
         @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
-            dbManager.addData("接收到的"+new String(message.getPayload())+"|"+ TrustTools.getSystemTimeString());
+//            dbManager.addData("接收到的"+new String(message.getPayload())+"|"+ TrustTools.getSystemTimeString());
             mqttResultCallBack.CallBack(topic,new String(message.getPayload()));
         }
 

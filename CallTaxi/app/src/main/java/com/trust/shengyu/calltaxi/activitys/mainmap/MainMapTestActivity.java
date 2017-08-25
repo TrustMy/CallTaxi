@@ -5,9 +5,19 @@ import android.os.Bundle;
 
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.MapView;
+import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.MyLocationStyle;
+import com.amap.api.trace.LBSTraceClient;
+import com.amap.api.trace.TraceListener;
+import com.amap.api.trace.TraceLocation;
+import com.amap.api.trace.TraceOverlay;
 import com.trust.shengyu.calltaxi.R;
 import com.trust.shengyu.calltaxi.base.BaseActivity;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class MainMapTestActivity extends BaseActivity {
     private MapView mapView;
@@ -22,8 +32,6 @@ public class MainMapTestActivity extends BaseActivity {
             aMap = mapView.getMap();
         }
 
-
-
         MyLocationStyle myLocationStyle;
         myLocationStyle = new MyLocationStyle();//初始化定位蓝点样式类myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE);//连续定位、且将视角移动到地图中心点，定位点依照设备方向旋转，并且会跟随设备移动。（1秒1次定位）如果不设置myLocationType，默认也会执行此种模式。
         myLocationStyle.interval(2000); //设置连续定位模式下的定位间隔，只在连续定位模式下生效，单次定位模式下不会生效。单位为毫秒。
@@ -36,6 +44,69 @@ public class MainMapTestActivity extends BaseActivity {
     }
 
 
+    private ConcurrentMap<Integer, TraceOverlay> mOverlayList = new ConcurrentHashMap<Integer, TraceOverlay>();
+    private int mSequenceLineID = 1000;
+    private List<TraceLocation> mTraceList;
+    private LBSTraceClient mTraceClient;
+    private int mCoordinateType = LBSTraceClient.TYPE_AMAP;
+    /**
+     * 调起一次轨迹纠偏
+     */
+    public void traceGrasp(){
+        TraceOverlay mTraceOverlay = new TraceOverlay(aMap);
+        mOverlayList.put(mSequenceLineID, mTraceOverlay);
+        List<LatLng> mapList = traceLocationToMap(mTraceList);
+        mTraceOverlay.setProperCamera(mapList);
+        mTraceClient = new LBSTraceClient(this.getApplicationContext());
+        mTraceClient.queryProcessedTrace(mSequenceLineID, mTraceList,
+                mCoordinateType,traceListener );
+    }
+
+    private TraceListener traceListener = new TraceListener() {
+
+        /**
+         * 轨迹纠偏失败回调
+         */
+        @Override
+        public void onRequestFailed(int lineID, String errorInfo) {
+
+        }
+
+
+        /**
+         * 轨迹纠偏过程回调
+         */
+        @Override
+        public void onTraceProcessing(int lineID, int index, List<LatLng> segments) {
+
+        }
+
+
+        /**
+         * 轨迹纠偏结束回调
+         */
+        @Override
+        public void onFinished(int lineID, List<LatLng> linepoints, int distance,
+                               int watingtime) {
+
+        }
+    };
+
+    /**
+     * 轨迹纠偏点转换为地图LatLng
+     *
+     * @param traceLocationList
+     * @return
+     */
+    public List<LatLng> traceLocationToMap(List<TraceLocation> traceLocationList) {
+        List<LatLng> mapList = new ArrayList<LatLng>();
+        for (TraceLocation location : traceLocationList) {
+            LatLng latlng = new LatLng(location.getLatitude(),
+                    location.getLongitude());
+            mapList.add(latlng);
+        }
+        return mapList;
+    }
 
     /**
      * 方法必须重写

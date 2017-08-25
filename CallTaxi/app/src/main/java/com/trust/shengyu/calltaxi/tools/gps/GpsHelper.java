@@ -240,7 +240,7 @@ public class GpsHelper implements Runnable {
             }
 
 
-            if (location != null) {
+            if (gpsLocation != null) {
                 float speed = gpsLocation.getSpeed() * 3.6f;   //转成 公里/时
                 normal++;
                 if (speed >= maxSpeed) {

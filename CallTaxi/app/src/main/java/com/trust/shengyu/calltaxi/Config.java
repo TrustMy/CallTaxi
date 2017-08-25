@@ -30,6 +30,7 @@ public class Config {
     //-----------------------Mqtt消息tag--------------------------------
 
     public final static int MQTT_TYPE_PLACE_AN_ORDER = 0x004;//下订单
+    public final static int MQTT_TYPE_NOBODY_ORDER = 0x001;//无人接单
     public final static int MQTT_TYPE_START_ORDER = 0x005;//开始订单
     public final static int MQTT_TYPE_END_ORDER = 0x006;//结束订单
     public final static int MQTT_TYPE_REFUSED_ORDER = 0x002;//取消订单
@@ -39,7 +40,7 @@ public class Config {
 
     //------------------------服务器接口--------------------------------
     //映射 http://192.168.1.111:8082/SYCloudPlatform-1.0   //本地  http://192.168.1.134:8082
-    public static String SERVER_URL = "http://192.168.1.134:8082";//服务器地址
+    public static String SERVER_URL = "http://192.168.1.111:8082/SYCloudPlatform-1.0";//服务器地址
     public static String PLACE_AN_ORDER = "/rest/book";//下订单
     public static String CANCEL_ORDER = "/rest/cancel";//取消订单
     public static String SERACH_EXECUTE_ORDER = "/rest/executing";//查询正在执行订单
@@ -50,6 +51,7 @@ public class Config {
     public static String DRIVER_END_ORDER = "/rest/finish";//司机结束订单
     public static String CLIENT_LOGIN = "/rest/user/login";//客户登陆
     public static String CLIENT_INFORMATION = "/rest/customer";//客户登陆
+    public static String REPLACE_AN_ORDER = "/rest/match";//下订单后 长时间无人接单 重新请求接口
 
 
     //-----------------------请求tag------------------------------------
@@ -62,6 +64,8 @@ public class Config {
     public static final int TAG_SERACH_HISTORY_ORDER_PAGING = 0x00006;//分页查询订单
     public static final int TAG_CLIENT_LOGIN = 0x00007;//客户登陆
     public static final int TAG_CLIENT_INFORMATION = 0x00008;//客户信息
+    public static final int TAG_REPLACE_AN_ORDER = 0x00009;//订单后 长时间无人接单 重新请求接口
+
 
     //-----------------------订单状态-----------------------------------
     public static final int OrderStatusBooked = 0;//预定订单，未支付 ,未派送

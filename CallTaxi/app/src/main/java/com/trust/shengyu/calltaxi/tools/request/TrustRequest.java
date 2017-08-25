@@ -92,6 +92,7 @@ public class TrustRequest {
             if(requestType == GET){
                 if (token != null) {
                     builder.addHeader("Token",token);
+
                 }
                 if(map != null){
                     StringBuffer sb = null;
@@ -99,14 +100,14 @@ public class TrustRequest {
                         if(sb == null){
                             sb = new StringBuffer();
                             if (entry.getValue() instanceof String){
-                                sb.append("?"+entry.getKey()+"= \""+entry.getValue()+"\"");
+                                sb.append("?"+entry.getKey()+"="+entry.getValue()+"");
                             }else{
                                 sb.append("?"+entry.getKey()+"="+entry.getValue());
                             }
 
                         }else{
                             if (entry.getValue() instanceof String){
-                                sb.append("&"+entry.getKey()+"= \""+entry.getValue()+"\"");
+                                sb.append("&"+entry.getKey()+"="+entry.getValue()+"");
                             }else{
                                 sb.append("&"+entry.getKey()+"="+entry.getValue());
                             }
@@ -152,7 +153,7 @@ public class TrustRequest {
     private Request returnRequest(String url, int requestType,int requestHeader ,String msg ,String token) {
         Request request = null;
         RequestBody body = null;
-
+        builder = new Request.Builder();
         body = returnBody(requestHeader,msg);
 
         if (body != null) {
@@ -168,6 +169,7 @@ public class TrustRequest {
             }
 
             request = builder.build();
+            L.d("request.headers().toString():"+request.headers().toString());
         }
         return request;
     }

@@ -153,7 +153,7 @@ public class TrustRequest {
     private Request returnRequest(String url, int requestType,int requestHeader ,String msg ,String token) {
         Request request = null;
         RequestBody body = null;
-
+        builder = new Request.Builder();
         body = returnBody(requestHeader,msg);
 
         if (body != null) {

@@ -83,8 +83,7 @@ public class TrustDialog {
         determineBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dialog.dismiss();
-                activity.finish();
+                errorOrderDialogListener.CallBack();
             }
         });
         TextView msgTv = (TextView) view.findViewById(R.id.error_order_dialog_msg);
@@ -98,6 +97,11 @@ public class TrustDialog {
         return dialog;
     }
 
+    public interface onErrorOrderDialogListener{void CallBack();};
+    public onErrorOrderDialogListener errorOrderDialogListener;
+    public void setErrorOrderDialogListener(onErrorOrderDialogListener errorOrderDialogListener){
+        this.errorOrderDialogListener = errorOrderDialogListener;
+    }
 
     /**
      * 等待dialog
@@ -217,5 +221,36 @@ public class TrustDialog {
         this.dialogClickListener = dialogClickListener;
     }
 
+
+    /**
+     * 长时间无相应提示用户继续等待或者取消订单
+     * @param activity
+     * @return
+     */
+    public TrustDialog showNoOneForALongTime(Activity activity){
+        final Dialog dialog = new Dialog(activity, R.style.customDialog);
+        View view = LayoutInflater.from(activity).inflate(R.layout.order_no_one_for_a_long_time_dialog,null);
+        Button determineOrderBtn = (Button) view.findViewById(R.id.order_no_one_for_a_long_time_determine_btn);
+        determineOrderBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                noOneForALongTimeListener.CallBack(view);
+            }
+        });
+
+        dialog.setContentView(view);
+        dialog.setCanceledOnTouchOutside(false);// 设置点击屏幕Dialog不消失
+        if(!activity.isFinishing()){
+            dialog.show();
+        }
+        cacelButton(dialog,(Button) view.findViewById(R.id.order_no_one_for_a_long_time_wait_btn));
+        return  this;
+    }
+
+    public interface  NoOneForALongTimeListener{void CallBack(View view);}
+    public NoOneForALongTimeListener noOneForALongTimeListener;
+    public void setNoOneForALongTimeListener(NoOneForALongTimeListener noOneForALongTimeListener){
+        this.noOneForALongTimeListener = noOneForALongTimeListener;
+    }
 
 }

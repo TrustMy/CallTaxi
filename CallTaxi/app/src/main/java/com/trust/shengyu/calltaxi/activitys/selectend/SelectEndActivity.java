@@ -36,8 +36,7 @@ public class SelectEndActivity extends BaseActivity {
     @BindView(R.id.select_end_city)
     EditText selectEndCity;
     private int RESULT_CODE = 2;
-    @BindView(R.id.finishbtn)
-    Button finishbtn;
+
     private String city = "北京";
     private List<Tip> ml = new ArrayList<>();
 
@@ -47,7 +46,7 @@ public class SelectEndActivity extends BaseActivity {
         setContentView(R.layout.activity_select_end);
         ButterKnife.bind(this);
 
-        baseSetOnClick(finishbtn);
+
 
         initView();
     }

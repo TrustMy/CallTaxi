@@ -153,7 +153,7 @@ public class TrustDialog {
             @Override
             public void onClick(View view) {
                 dialog.dismiss();
-                activity.finish();
+                errorOrderDialogListener.CallBack();
             }
         });
         TextView msgTv = (TextView) view.findViewById(R.id.error_order_dialog_msg);
@@ -165,5 +165,10 @@ public class TrustDialog {
         }
 
         return dialog;
+    }
+    public interface onErrorOrderDialogListener{void CallBack();}
+    public onErrorOrderDialogListener errorOrderDialogListener;
+    public void setErrorOrderDialogListener(onErrorOrderDialogListener errorOrderDialogListener){
+        this .errorOrderDialogListener = errorOrderDialogListener;
     }
 }

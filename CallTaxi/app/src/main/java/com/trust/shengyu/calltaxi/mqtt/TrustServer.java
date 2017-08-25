@@ -15,6 +15,7 @@ import com.trust.shengyu.calltaxi.tools.L;
 import com.trust.shengyu.calltaxi.tools.beans.MqttBean;
 import com.trust.shengyu.calltaxi.tools.beans.MqttResultBean;
 import com.trust.shengyu.calltaxi.tools.beans.MqttTypePlaceAnOrder;
+import com.trust.shengyu.calltaxi.tools.beans.NObodyOrderBean;
 import com.trust.shengyu.calltaxi.tools.beans.RefusedOrderBean;
 import com.trust.shengyu.calltaxi.tools.gps.GpsHelper;
 
@@ -49,7 +50,7 @@ public class TrustServer extends Service {
         if (callTaxiCommHelper == null) {
             callTaxiCommHelper = new CallTaxiCommHelper(context);
             callTaxiCommHelper.setOnMqttCallBackResultListener(onMqttCallBackResultListener);
-            callTaxiCommHelper.doClientConnection();
+
             gson = new Gson();
             gpsHelper = new GpsHelper();
             threadPool.execute(gpsHelper);
@@ -61,6 +62,10 @@ public class TrustServer extends Service {
             gpsHelper.startGpsListening();
         }
 
+    }
+
+    public void doClientConnection(){
+        callTaxiCommHelper.doClientConnection();
     }
 
     //mqtt 收到push 回调
@@ -103,7 +108,7 @@ public class TrustServer extends Service {
         //此时已在主线程中，可以更新UI了
         MqttTypePlaceAnOrder bean =  gson.fromJson(msg.toString(), MqttTypePlaceAnOrder.class);
 
-        if (bean.getStatus() == Config.SUCCESS){
+//        if (bean.getStatus() == Config.SUCCESS){
             switch (bean.getType()){
                 case Config.MQTT_TYPE_PLACE_AN_ORDER:
                     baseActivity.resultMqttTypePlaceAnOrder(null);
@@ -118,14 +123,17 @@ public class TrustServer extends Service {
                     RefusedOrderBean refusedOrderBean = gson.fromJson(msg,RefusedOrderBean.class);
                     baseActivity.resultMqttTypeRefusedOrder(refusedOrderBean);
                     break;
+                case Config.MQTT_TYPE_NOBODY_ORDER:
+                    NObodyOrderBean nObodyOrderBean = gson.fromJson(msg,NObodyOrderBean.class);
+                    baseActivity.resultMqttTypeNobodyOrder(nObodyOrderBean);
                 default:
                     baseActivity.resultMqttTypeOther(bean);
                     break;
             }
             baseActivity.dissDialog();
-        }else{
-//                        resultErrorMqtt("false:"+bean.getErrorMsg());
-        }
+//        }else{
+////                        resultErrorMqtt("false:"+bean.getErrorMsg());
+//        }
     }
 
     public void filterOrder(){
