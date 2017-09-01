@@ -20,4 +20,6 @@
         android:text="Hello World!"
         />
 
+    <include layout="@layout/base_map_view" />
+
 </LinearLayout>

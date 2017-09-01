@@ -7,11 +7,11 @@ import android.widget.TextView;
 import com.tencent.bugly.crashreport.CrashReport;
 import com.trust.shengyu.rentalcar.tools.L;
 import com.trust.shengyu.rentalcar.tools.gsons.*;
-import com.trust.shengyu.rentalcar.testinterface.FunctionsManager;
-import com.trust.shengyu.rentalcar.testinterface.FunctonNoParamNotResult;
-import com.trust.shengyu.rentalcar.testinterface.FunctonNoParamWithResult;
-import com.trust.shengyu.rentalcar.testinterface.FunctonWithParamNotResult;
-import com.trust.shengyu.rentalcar.testinterface.FunctonWithParamWithtResult;
+import com.trust.shengyu.rentalcar.tools.trustbaseinterface.FunctionsManager;
+import com.trust.shengyu.rentalcar.tools.trustbaseinterface.FunctonNoParamNotResult;
+import com.trust.shengyu.rentalcar.tools.trustbaseinterface.FunctonNoParamWithResult;
+import com.trust.shengyu.rentalcar.tools.trustbaseinterface.FunctonWithParamNotResult;
+import com.trust.shengyu.rentalcar.tools.trustbaseinterface.FunctonWithParamWithtResult;
 
 public class MainActivity extends BaseActivity {
     private TextView test;

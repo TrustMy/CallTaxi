@@ -4,24 +4,45 @@ import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 
+import com.amap.api.maps.MapView;
+import com.jakewharton.rxbinding2.view.RxView;
 import com.trust.shengyu.rentalcar.tools.AndroidPermissionTool;
 import com.trust.shengyu.rentalcar.tools.L;
 
-public class BaseActivity extends AppCompatActivity {
+import java.util.concurrent.TimeUnit;
 
+import io.reactivex.functions.Consumer;
+
+public class BaseActivity extends AppCompatActivity {
+    protected MapView mapView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         initPermission();
     }
-
     protected void initPermission(){
         AndroidPermissionTool androidPermissionTool = new AndroidPermissionTool();
         androidPermissionTool.checkPermission(this);
     }
 
+
+
+
+
+    //--------------------在设置的时间内只响应1次,其他过滤---------------------------------------------------------------------
+    protected void  baseSetOnClick(final View v){
+        RxView.clicks(v).throttleFirst(Config.ClickTheInterval, TimeUnit.SECONDS).
+                subscribe(new Consumer<Object>() {
+                    @Override
+                    public void accept(@NonNull Object o) throws Exception {
+                        baseClickResult(v);
+                    }
+                });
+    }
+
+    //----------------------动态申请权限结果---------------------------------------------------
     boolean status = false;
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

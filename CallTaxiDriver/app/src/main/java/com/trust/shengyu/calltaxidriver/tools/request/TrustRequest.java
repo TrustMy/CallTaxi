@@ -88,7 +88,7 @@ public class TrustRequest {
         }
 
         if (msg != null) {
-            L.d("Request 发送的json:"+msg);
+
         }
             if(requestType == GET){
                 if (token != null) {
@@ -115,10 +115,10 @@ public class TrustRequest {
                         }
                     }
                     builder.addHeader("Token",token);
-                    L.d("get usrl :"+urls+ sb.toString());
+
                     request =  builder.get().url(urls+ sb.toString()).build();
                 }else{
-                    L.d("get usrl :"+urls);
+
                     request =  builder.get().url(urls).build();
                 }
             }else {
