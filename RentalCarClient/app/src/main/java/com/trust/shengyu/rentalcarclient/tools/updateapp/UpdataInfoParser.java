@@ -10,7 +10,7 @@ import java.util.List;
  * Created by Trust on 2016/7/28.
  */
 public class UpdataInfoParser {
-
+/*
     public static UpdataInfo getUpdataInfo(InputStream is) throws Exception {
         List<Bean> beautyList =new ArrayList<Bean>();;
         UpdataInfo info = new UpdataInfo();
@@ -45,4 +45,5 @@ public class UpdataInfoParser {
 
     }
 
+*/
 }

@@ -17,6 +17,16 @@ public abstract class BaseRecyclerViewAdapter <T> extends RecyclerView.Adapter <
 
     public void setMl(List<T> ml) {
         this.ml = ml;
+        changeData();
+    }
+
+    /**
+     * 刷新数据源的时候
+     */
+    protected void changeData(){};
+
+    public List<T> getMl() {
+        return ml;
     }
 
     public BaseRecyclerViewAdapter(Context mContext) {
@@ -30,7 +40,10 @@ public abstract class BaseRecyclerViewAdapter <T> extends RecyclerView.Adapter <
             @Override
             public void onClick(View view) {
                 int pos = viewHolder.getAdapterPosition();
-                mItemOnClickListener.itemOnClickListener(view,pos,ml.get(pos));
+                ItemOnClick(pos);
+                if (mItemOnClickListener != null) {
+                    mItemOnClickListener.itemOnClickListener(view,pos,ml.get(pos));
+                }
             }
         });
         return viewHolder;
@@ -57,6 +70,7 @@ public abstract class BaseRecyclerViewAdapter <T> extends RecyclerView.Adapter <
         }
     }
 
+    //点击item
     public void setItemOnClickListener(ItemOnClickListener itemOnClickListener){
         mItemOnClickListener = itemOnClickListener;
     }
@@ -66,4 +80,9 @@ public abstract class BaseRecyclerViewAdapter <T> extends RecyclerView.Adapter <
     }
 
     public ItemOnClickListener mItemOnClickListener;
+
+
+    protected void ItemOnClick(int pos){
+
+    }
 }

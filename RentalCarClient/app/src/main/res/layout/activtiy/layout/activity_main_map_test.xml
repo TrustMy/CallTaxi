@@ -6,11 +6,10 @@
     android:layout_height="match_parent"
     tools:context="com.trust.shengyu.rentalcarclient.activitys.mainmap.MainMapTestActivity">
 
-    <include
-        android:id="@+id/mainmaptest_map"
-        layout="@layout/map_layout"
+    <com.amap.api.navi.AMapNaviView
+        android:id="@+id/navi_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 
 
 

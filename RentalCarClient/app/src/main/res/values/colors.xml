@@ -8,4 +8,10 @@
     <color name="colorStatusBarBg">#6ED18E</color>
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorBlack">#000000</color>
+    <color name="colorOrange">#FF8F25</color>
+    <color name="colorGray">#CCCCCC</color>
+    <color name="colorRed">#FF0000</color>
+    <color name="colorGrayBg">#EEEEEE</color>
+    <color name="colorGreenBtn">#29a978</color>
+
 </resources>

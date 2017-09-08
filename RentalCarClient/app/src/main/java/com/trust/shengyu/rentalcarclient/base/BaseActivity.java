@@ -14,6 +14,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -30,13 +31,16 @@ import com.trust.shengyu.rentalcarclient.db.DbHelper;
 import com.trust.shengyu.rentalcarclient.server.TrustServer;
 import com.trust.shengyu.rentalcarclient.tools.L;
 
-import com.trust.shengyu.rentalcarclient.tools.beans.Bean;
-import com.trust.shengyu.rentalcarclient.tools.beans.MqttTypePlaceAnOrder;
-import com.trust.shengyu.rentalcarclient.tools.beans.NObodyOrderBean;
-import com.trust.shengyu.rentalcarclient.tools.beans.RefusedOrderBean;
+import com.trust.shengyu.rentalcarclient.tools.TrustTools;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.Bean;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.MqttTypePlaceAnOrder;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.NObodyOrderBean;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.RefusedOrderBean;
+import com.trust.shengyu.rentalcarclient.tools.beans.rentalcarbeans.ResultErrorBean;
 import com.trust.shengyu.rentalcarclient.tools.dialog.TrustDialog;
 import com.trust.shengyu.rentalcarclient.tools.gdgps.DrawLiner;
 import com.trust.shengyu.rentalcarclient.tools.gdgps.Positioning;
+import com.trust.shengyu.rentalcarclient.tools.gson.TrustAnalysis;
 import com.trust.shengyu.rentalcarclient.tools.request.TrustRequest;
 
 
@@ -46,6 +50,10 @@ import java.util.concurrent.TimeUnit;
 
 
 import io.reactivex.functions.Consumer;
+
+import static com.trust.shengyu.rentalcarclient.RentalcarClientConfig.TAG_URL_VERIFICATION_CODE;
+import static com.trust.shengyu.rentalcarclient.RentalcarClientConfig.URL_SERVER;
+import static com.trust.shengyu.rentalcarclient.RentalcarClientConfig.URL_VERIFICATION_CODE;
 
 /**
  * Created by Trust on 2017/5/10.
@@ -68,6 +76,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected static TrustServer mqttServer;
     protected TrustRequest trustRequest;
     private Dialog waitDialog;
+
+    protected TrustTools trustTools;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -88,7 +98,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         mActivity = this;
         init();
         initPush();
-        L.d("这是父类的");
     }
 
     private void initPush() {
@@ -97,7 +106,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         dbManager.selectAllData();
 
         if(mqttServer == null){
-//            bindService(new Intent(context,TrustServer.class),serviceConnection, Context.BIND_AUTO_CREATE);
+            bindService(new Intent(context,TrustServer.class),serviceConnection, Context.BIND_AUTO_CREATE);
+
         }
 
     }
@@ -107,14 +117,13 @@ public abstract class BaseActivity extends AppCompatActivity {
 //        StatusBar.setColor(Config.activity, Color.parseColor("#6ED18E"));
         TrustServer.baseActivity = this;
 
-        L.d("base Activity");
         /*
         if (callTaxiCommHelper == null) {
             callTaxiCommHelper = new CallTaxiCommHelper(context);
             callTaxiCommHelper.doClientConnection();
         }
         */
-        trustRequest = new TrustRequest(resultCallBack , Config.SERVER_URL);
+        trustRequest = new TrustRequest(resultCallBack , URL_SERVER);
         gson = new Gson();
         drawLiner = new DrawLiner(context);
         positioning = new Positioning();
@@ -125,7 +134,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 getOrderDialogResult(startName,endName,taxiCast);
             }
         });
-
+        trustTools = new TrustTools();
 
 //        requestCallBeack(Config.SERACH_EXECUTE_ORDER,map,Config.TAG_SERACH_EXECUTE_ORDER,
 //                trustRequest.GET);
@@ -222,20 +231,28 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (status == 1) {//成功
             return true;
         }else{
-            L.e("error message :"+msg);
-
+            ResultErrorBean errorBean = TrustAnalysis.resultTrustBean(msg,ResultErrorBean.class);
+            showToast(errorBean.getInfo());
             return false;
         }
     }
 
 
+    protected void Countdown(View view, int time){
+        new TrustTools<>().Countdown(view,time);
+    }
+
 
     //-------------------------基础配置------------------------------------------------------"Bearer V95iRBXYKLOdm3y/eqM0Vz05yYiP53r+T5oIoQ1B1M0="-------------
 
-    public void requestCallBeack(String url, Map<String,Object> map,int type ,int requestType,String token){
+    public void requestCallBeack(String url, Map<String,Object> map,int requestCode ,int requestType,String token){
 //        waitDialog = trustDialog.showWaitDialog(this);
-        trustRequest.Request(url,map,type,requestType,trustRequest.HeaderJson,token);
+        L.d("requestType:"+requestType);
+        showToast("正在请求,请稍后....");
+        trustRequest.Request(url,map,requestCode,requestType,trustRequest.HeaderJson,token);
     }
+
+
 
     private TrustRequest.onResultCallBack resultCallBack = new TrustRequest.onResultCallBack() {
         @Override
@@ -307,20 +324,29 @@ public abstract class BaseActivity extends AppCompatActivity {
     /**
      * 申请验证码
      */
-    protected void requestCheckNum(long phone) {
+    protected void requestCheckNum(String phone) {
         Map<String,Object> map =  new WeakHashMap<>();
-        map.put("cp",phone);
+        map.put("cellPhone",phone);
+        requestCallBeack(URL_VERIFICATION_CODE,map, TAG_URL_VERIFICATION_CODE,trustRequest.GET_NO_PARAMETER_Name,null);
 //        requestCallBeack(Config.get_check_num, map, Config.getCheckNum, Config.noAdd);
     }
 
     /**
      * 检测 输入是否为空
-     * @param editText
+     * @param view
      * @param errorMsg
      * @return
      */
-    protected  String baseCheckIsNull(EditText editText,String errorMsg){
-        String msg = editText.getText().toString().trim();
+    protected  String baseCheckIsNull(View view,String errorMsg){
+        String msg = null;
+        if (view instanceof EditText) {
+            msg = ((EditText)view).getText().toString().trim();
+        }else if(view instanceof Button){
+            msg = ((Button) view).getText().toString().trim();
+            if (msg.equals("请选择领取时间")) {
+                msg = "";
+            }
+        }
         if(!msg.equals("")){
             return msg;
         }else{

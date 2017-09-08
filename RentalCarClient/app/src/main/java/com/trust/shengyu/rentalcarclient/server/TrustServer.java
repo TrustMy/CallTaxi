@@ -12,10 +12,10 @@ import com.trust.shengyu.rentalcarclient.Config;
 import com.trust.shengyu.rentalcarclient.base.BaseActivity;
 import com.trust.shengyu.rentalcarclient.server.network.CallTaxiCommHelper;
 import com.trust.shengyu.rentalcarclient.tools.L;
-import com.trust.shengyu.rentalcarclient.tools.beans.MqttBean;
-import com.trust.shengyu.rentalcarclient.tools.beans.MqttTypePlaceAnOrder;
-import com.trust.shengyu.rentalcarclient.tools.beans.NObodyOrderBean;
-import com.trust.shengyu.rentalcarclient.tools.beans.RefusedOrderBean;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.MqttBean;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.MqttTypePlaceAnOrder;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.NObodyOrderBean;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.RefusedOrderBean;
 import com.trust.shengyu.rentalcarclient.tools.gps.GpsHelper;
 
 import java.util.LinkedList;
@@ -49,7 +49,6 @@ public class TrustServer extends Service {
         if (callTaxiCommHelper == null) {
             callTaxiCommHelper = new CallTaxiCommHelper(context);
             callTaxiCommHelper.setOnMqttCallBackResultListener(onMqttCallBackResultListener);
-
             gson = new Gson();
             gpsHelper = new GpsHelper();
             threadPool.execute(gpsHelper);
@@ -59,6 +58,7 @@ public class TrustServer extends Service {
                 e.printStackTrace();
             }
 //            gpsHelper.startGpsListening();
+            doClientConnection();
         }
 
     }

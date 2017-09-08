@@ -13,10 +13,10 @@ import com.trust.shengyu.rentalcarclient.R;
 import com.trust.shengyu.rentalcarclient.base.BaseActivity;
 import com.trust.shengyu.rentalcarclient.tools.L;
 import com.trust.shengyu.rentalcarclient.tools.TrustTools;
-import com.trust.shengyu.rentalcarclient.tools.beans.Bean;
-import com.trust.shengyu.rentalcarclient.tools.beans.MqttTypePlaceAnOrder;
-import com.trust.shengyu.rentalcarclient.tools.beans.NObodyOrderBean;
-import com.trust.shengyu.rentalcarclient.tools.beans.RefusedOrderBean;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.Bean;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.MqttTypePlaceAnOrder;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.NObodyOrderBean;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.RefusedOrderBean;
 import com.trust.shengyu.rentalcarclient.tools.dialog.TrustDialog;
 
 import java.util.Map;

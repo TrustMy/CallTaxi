@@ -9,13 +9,16 @@
     <uses-permission android:name="android.permission.LOCATION_HARDWARE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_CONFIGURATION" />
      
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <!-- <&#45;&#45;!读取数据的权限-&ndash;&gt; -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- <&#45;&#45;!在SD卡中创建与删除文件权限&ndash;&gt; -->
+    <uses-permission android:name="android.permission.MOUNT_FORMAT_FILESYSTEMS" />
 
     <application
         android:allowBackup="true"
@@ -29,8 +32,8 @@
             android:value="23986565d96f0142c4893f69cca13569" />
 
         <activity android:name=".activitys.MainActivity" />
-        <activity android:name=".activitys.registerandlogin.LoginActivity"></activity>
-        <activity android:name=".activitys.mainmap.MainMapActivity" />
+        <activity android:name=".activitys.registerandlogin.LoginActivity" />
+        <activity android:name=".activitys.mainmap.MainMapActivity"></activity>
 
         <receiver android:name=".activitys.wifiBrodCast">
             <intent-filter>
@@ -44,30 +47,33 @@
         <service android:name="org.eclipse.paho.android.service.MqttService" />
         <service android:name=".server.TrustServer" />
 
-        <activity android:name=".activitys.WifiActivity"></activity>
-        >
+        <activity android:name=".activitys.MainControllActivity"></activity>
         <activity android:name=".activitys.orderhistory.OrderHistoryActivity" />
         <activity android:name=".activitys.registerandlogin.RegisteredActivity" />
         <activity android:name=".activitys.resetpassword.ResetPasswordActivity" />
         <activity android:name=".activitys.mainmap.MainMapTestActivity" />
+        >
         <activity android:name=".activitys.selectend.SelectEndActivity" />
         <activity android:name=".activitys.orderstatus.OrderStatusActivity" />
 
         <!-- 广告页面 -->
         <activity android:name=".SpalshActivity">
-
-        </activity>
-
-        <!-- 定位需要的服务 使用2.0的定位需要加上这个 -->
-        <service android:name="com.amap.api.location.APSService"></service>
-
-        <activity android:name=".activitys.checkinfo.CheckInfoActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- 定位需要的服务 使用2.0的定位需要加上这个 -->
+        <service android:name="com.amap.api.location.APSService" />
+
+        <activity android:name=".activitys.checkinfo.IdCardActivity" />
+        <activity android:name=".DaoHangActivtiy" />
+        <activity android:name=".activitys.checkinfo.UserMessageActivity"></activity>
+        <activity android:name=".activitys.checkinfo.DriversLicenseActivity" />
+        <activity android:name=".activitys.redenvelopes.MyRedEnvelopesActivity"></activity>
+        <activity android:name=".activitys.returncar.ReturnCarOutletsActivity"></activity>
     </application>
 
 </manifest>

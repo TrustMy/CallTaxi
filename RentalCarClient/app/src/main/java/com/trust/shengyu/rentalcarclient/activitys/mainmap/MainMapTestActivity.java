@@ -1,157 +1,91 @@
 package com.trust.shengyu.rentalcarclient.activitys.mainmap;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.MapView;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.MyLocationStyle;
+import com.amap.api.navi.AMapNavi;
+import com.amap.api.navi.AMapNaviListener;
+import com.amap.api.navi.AMapNaviView;
+import com.amap.api.navi.AMapNaviViewListener;
+import com.amap.api.navi.enums.NaviType;
+import com.amap.api.navi.model.AMapLaneInfo;
+import com.amap.api.navi.model.AMapNaviCameraInfo;
+import com.amap.api.navi.model.AMapNaviCross;
+import com.amap.api.navi.model.AMapNaviInfo;
+import com.amap.api.navi.model.AMapNaviLocation;
+import com.amap.api.navi.model.AMapNaviTrafficFacilityInfo;
+import com.amap.api.navi.model.AMapServiceAreaInfo;
+import com.amap.api.navi.model.AimLessModeCongestionInfo;
+import com.amap.api.navi.model.AimLessModeStat;
+import com.amap.api.navi.model.NaviInfo;
+import com.amap.api.navi.model.NaviLatLng;
 import com.amap.api.trace.LBSTraceClient;
 import com.amap.api.trace.TraceListener;
 import com.amap.api.trace.TraceLocation;
 import com.amap.api.trace.TraceOverlay;
+import com.autonavi.tbt.TrafficFacilityInfo;
+import com.trust.shengyu.rentalcarclient.DaoHangActivtiy;
 import com.trust.shengyu.rentalcarclient.R;
 import com.trust.shengyu.rentalcarclient.base.BaseActivity;
+import com.trust.shengyu.rentalcarclient.tools.L;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class MainMapTestActivity extends BaseActivity {
-    private MapView mapView;
-    private AMap aMap;
+public class MainMapTestActivity extends DaoHangActivtiy {
+
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_map_test);
-        mapView = (MapView) bindView(this,R.id.mainmaptest_map,R.id.base_map);
-        mapView.onCreate(savedInstanceState);// 此方法必须重写
-        if (aMap == null) {
-            aMap = mapView.getMap();
-        }
 
-        MyLocationStyle myLocationStyle;
-        myLocationStyle = new MyLocationStyle();//初始化定位蓝点样式类myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE);//连续定位、且将视角移动到地图中心点，定位点依照设备方向旋转，并且会跟随设备移动。（1秒1次定位）如果不设置myLocationType，默认也会执行此种模式。
-        myLocationStyle.interval(2000); //设置连续定位模式下的定位间隔，只在连续定位模式下生效，单次定位模式下不会生效。单位为毫秒。
+        mAMapNaviView = (AMapNaviView) findViewById(R.id.navi_view);
+        mAMapNaviView.onCreate(savedInstanceState);
+        mAMapNaviView.setAMapNaviViewListener(this);
 
-        /*
-        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_SHOW);//只定位一次。
-        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATE) ;//定位一次，且将视角移动到地图中心点。
-        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_FOLLOW) ;//连续定位、且将视角移动到地图中心点，定位蓝点跟随设备移动。（1秒1次定位）
-        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_MAP_ROTATE);//连续定位、且将视角移动到地图中心点，地图依照设备方向旋转，定位点会跟随设备移动。（1秒1次定位）
-        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE);//连续定位、且将视角移动到地图中心点，定位点依照设备方向旋转，并且会跟随设备移动。（1秒1次定位）默认执行此种模式。
-//以下三种模式从5.1.0版本开始提供
-        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER);//连续定位、蓝点不会移动到地图中心点，定位点依照设备方向旋转，并且蓝点会跟随设备移动。
-        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_FOLLOW_NO_CENTER);//连续定位、蓝点不会移动到地图中心点，并且蓝点会跟随设备移动。
-        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_MAP_ROTATE_NO_CENTER);//连续定位、蓝点不会移动到地图中心点，地图依照设备方向旋转，并且蓝点会跟随设备移动。
-           */
-
-
-
-        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER);
-        aMap.setMyLocationStyle(myLocationStyle);//设置定位蓝点的Style
-        aMap.setMyLocationEnabled(true);// 设置为true表示启动显示定位蓝点，false表示隐藏定位蓝点并不进行定位，默认是false。
+        L.d("111111");
     }
 
-
-    private ConcurrentMap<Integer, TraceOverlay> mOverlayList = new ConcurrentHashMap<Integer, TraceOverlay>();
-    private int mSequenceLineID = 1000;
-    private List<TraceLocation> mTraceList;
-    private LBSTraceClient mTraceClient;
-    private int mCoordinateType = LBSTraceClient.TYPE_AMAP;
-    /**
-     * 调起一次轨迹纠偏
-     */
-    public void traceGrasp(){
-        TraceOverlay mTraceOverlay = new TraceOverlay(aMap);
-        mOverlayList.put(mSequenceLineID, mTraceOverlay);
-        List<LatLng> mapList = traceLocationToMap(mTraceList);
-        mTraceOverlay.setProperCamera(mapList);
-        mTraceClient = new LBSTraceClient(this.getApplicationContext());
-        mTraceClient.queryProcessedTrace(mSequenceLineID, mTraceList,
-                mCoordinateType,traceListener );
-    }
-
-    private TraceListener traceListener = new TraceListener() {
-
+    @Override
+    public void onInitNaviSuccess() {
+        super.onInitNaviSuccess();
+        L.d("22222");
         /**
-         * 轨迹纠偏失败回调
+         * 方法: int strategy=mAMapNavi.strategyConvert(congestion, avoidhightspeed, cost, hightspeed, multipleroute); 参数:
+         *
+         * @congestion 躲避拥堵
+         * @avoidhightspeed 不走高速
+         * @cost 避免收费
+         * @hightspeed 高速优先
+         * @multipleroute 多路径
+         *
+         *  说明: 以上参数都是boolean类型，其中multipleroute参数表示是否多条路线，如果为true则此策略会算出多条路线。
+         *  注意: 不走高速与高速优先不能同时为true 高速优先与避免收费不能同时为true
          */
-        @Override
-        public void onRequestFailed(int lineID, String errorInfo) {
-
+        int strategy = 0;
+        try {
+            //再次强调，最后一个参数为true时代表多路径，否则代表单路径
+            strategy = mAMapNavi.strategyConvert(true, false, false, false, false);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        mAMapNavi.setCarNumber("京", "DFZ588");
+        mAMapNavi.calculateDriveRoute(sList, eList, mWayPointList, strategy);
 
-
-        /**
-         * 轨迹纠偏过程回调
-         */
-        @Override
-        public void onTraceProcessing(int lineID, int index, List<LatLng> segments) {
-
-        }
-
-
-        /**
-         * 轨迹纠偏结束回调
-         */
-        @Override
-        public void onFinished(int lineID, List<LatLng> linepoints, int distance,
-                               int watingtime) {
-
-        }
-    };
-
-    /**
-     * 轨迹纠偏点转换为地图LatLng
-     *
-     * @param traceLocationList
-     * @return
-     */
-    public List<LatLng> traceLocationToMap(List<TraceLocation> traceLocationList) {
-        List<LatLng> mapList = new ArrayList<LatLng>();
-        for (TraceLocation location : traceLocationList) {
-            LatLng latlng = new LatLng(location.getLatitude(),
-                    location.getLongitude());
-            mapList.add(latlng);
-        }
-        return mapList;
     }
 
-    /**
-     * 方法必须重写
-     */
     @Override
-    protected void onResume() {
-        super.onResume();
-        mapView.onResume();
-    }
-
-    /**
-     * 方法必须重写
-     */
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mapView.onPause();
-    }
-
-    /**
-     * 方法必须重写
-     */
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        mapView.onSaveInstanceState(outState);
-    }
-
-    /**
-     * 方法必须重写
-     */
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mapView.onDestroy();
+    public void onCalculateRouteSuccess(int[] ids) {
+        super.onCalculateRouteSuccess(ids);
+        L.d("3333333");
+        mAMapNavi.startNavi(NaviType.GPS);
     }
 }

@@ -11,6 +11,10 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.trust.shengyu.rentalcarclient.activitys.registerandlogin.LoginActivity;
+import com.trust.shengyu.rentalcarclient.tools.L;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import butterknife.BindView;
 
@@ -60,6 +64,10 @@ public class SpalshActivity extends TrustBaseActivity {
             }
         };
         new Thread(runnable).start();
+
+
+
+
     }
 
     private Handler handler = new Handler() {

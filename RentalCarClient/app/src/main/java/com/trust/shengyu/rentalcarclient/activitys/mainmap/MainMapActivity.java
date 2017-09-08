@@ -42,9 +42,9 @@ import com.trust.shengyu.rentalcarclient.activitys.selectend.SelectEndActivity;
 import com.trust.shengyu.rentalcarclient.base.BaseActivity;
 import com.trust.shengyu.rentalcarclient.tools.L;
 import com.trust.shengyu.rentalcarclient.tools.TrustTools;
-import com.trust.shengyu.rentalcarclient.tools.beans.PlaceAnOrderBean;
-import com.trust.shengyu.rentalcarclient.tools.beans.RefusedOrderBean;
-import com.trust.shengyu.rentalcarclient.tools.beans.SelectOrdersBean;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.PlaceAnOrderBean;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.RefusedOrderBean;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.SelectOrdersBean;
 import com.trust.shengyu.rentalcarclient.tools.dialog.TrustDialog;
 import com.trust.shengyu.rentalcarclient.tools.gdgps.ConversionLocation;
 import com.trust.shengyu.rentalcarclient.tools.gdgps.Maker;
@@ -292,7 +292,6 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
                     .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher))
                     .position(ml.get(i));
             l.add(markerOptions);
-
         }
         ma = aMap.addMarkers(l, true);
         startGrowAnimation(ma);

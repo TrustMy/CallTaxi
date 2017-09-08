@@ -1,5 +1,6 @@
 package com.trust.shengyu.rentalcarclient.tools;
 
+import android.app.Activity;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
@@ -16,16 +17,25 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.google.gson.Gson;
+import com.trust.shengyu.rentalcarclient.Config;
+import com.trust.shengyu.rentalcarclient.base.BaseActivity;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -61,43 +71,48 @@ public class TrustTools <T extends View> {
      * @param value
      * @param time
      */
-    public  void  Countdown(final T value , int time){
-        final int count = time;
-        Observable.interval(0,1, TimeUnit.SECONDS).take(count+1).map(new Function<Long, Object>() {
+    public  void  Countdown(final T value , final int time){
+        Config.activity.runOnUiThread(new Runnable() {
             @Override
-            public Object apply(@NonNull Long aLong) throws Exception {
-                L.d("定时器: count:"+count+"|aLong:"+aLong);
-                return count-aLong;
+            public void run() {
+                final int count = time;
+                Observable.interval(0,1, TimeUnit.SECONDS).take(count+1).map(new Function<Long, Object>() {
+                    @Override
+                    public Object apply(@NonNull Long aLong) throws Exception {
+
+                        return count-aLong;
+                    }
+                }).subscribeOn(Schedulers.io())
+                        .doOnSubscribe(new Consumer<Disposable>() {
+                            @Override
+                            public void accept(@NonNull Disposable disposable) throws Exception {
+                                value.setEnabled(false);//不可点击
+                            }
+                        }).observeOn(AndroidSchedulers.mainThread())//操作UI主要在UI线程
+                        .subscribe(new Observer<Object>() {
+                            @Override
+                            public void onSubscribe(@NonNull Disposable d) {
+
+                            }
+
+                            @Override
+                            public void onNext(@NonNull Object o) {
+                                checkT(value,o+"秒");
+                            }
+
+                            @Override
+                            public void onError(@NonNull Throwable e) {
+
+                            }
+
+                            @Override
+                            public void onComplete() {
+                                value.setEnabled(true);//不可点击
+                                checkT(value,"获取验证码");
+                            }
+                        });
             }
-        }).subscribeOn(Schedulers.io())
-                .doOnSubscribe(new Consumer<Disposable>() {
-                    @Override
-                    public void accept(@NonNull Disposable disposable) throws Exception {
-                        value.setEnabled(false);//不可点击
-                    }
-                }).observeOn(AndroidSchedulers.mainThread())//操作UI主要在UI线程
-                .subscribe(new Observer<Object>() {
-                    @Override
-                    public void onSubscribe(@NonNull Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onNext(@NonNull Object o) {
-                        checkT(value,o+"秒");
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        value.setEnabled(true);//不可点击
-                        checkT(value,"获取验证码");
-                    }
-                });
+        });
     }
 
     private void checkT(T v,String msg){
@@ -169,6 +184,22 @@ public class TrustTools <T extends View> {
     }
 
     /**
+     * 根据指定的时间 获取long
+     * @param format
+     * @return
+     */
+    public static long getTime( String format) {
+        try {
+            SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            long timeStart=sdf.parse(format).getTime();
+            return timeStart;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    /**
      * 省略小数点后几位
      * @param v  小数
      * @param scale  几位
@@ -190,12 +221,19 @@ public class TrustTools <T extends View> {
      * @return
      * @throws PackageManager.NameNotFoundException
      */
-    public static String resultAppVersion(Context context) throws PackageManager.NameNotFoundException {
-        PackageManager packageManager = context.getPackageManager();
+    public static String resultAppVersion(Context context)  {
 
-        PackageInfo packInfo = packageManager.getPackageInfo(context.getPackageName(),
-                0);
-        return packInfo.versionName;
+        try {
+            PackageManager packageManager = context.getPackageManager();
+
+            PackageInfo packInfo = null;
+            packInfo = packageManager.getPackageInfo(context.getPackageName(),
+                    0);
+            return packInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 
@@ -387,6 +425,7 @@ public class TrustTools <T extends View> {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
                 L.e("读取img 错误:"+e.toString());
+
             }
             L.d("rotate :"+rotate);
             // 1:compress bitmap
@@ -428,7 +467,7 @@ public class TrustTools <T extends View> {
             }
             // 2:rotate bitmap
             if(f.exists()){
-                f.delete();
+//                f.delete();
             }
 
             if(rotate>0){
@@ -479,8 +518,11 @@ public class TrustTools <T extends View> {
 
      * @return
      */
-    public static Bitmap bitmapCompressionRotate(String path){
+    public  Bitmap bitmapCompressionRotate(String path){
+
         try{
+            InputStream inputStream= new FileInputStream(new File(path));
+            L.d("file:"+inputStream.toString());
             int quality = 80;
             Bitmap bitmap = null;
             //
@@ -488,8 +530,8 @@ public class TrustTools <T extends View> {
             int rotate = 0;
             try {
                 ExifInterface exifInterface = new ExifInterface(path);
-                int result = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
-                switch(result) {
+                int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                switch (orientation) {
                     case ExifInterface.ORIENTATION_ROTATE_90:
                         rotate = 90;
                         break;
@@ -499,16 +541,12 @@ public class TrustTools <T extends View> {
                     case ExifInterface.ORIENTATION_ROTATE_270:
                         rotate = 270;
                         break;
-                    default:
-                        rotate =  0;
-                        break;
                 }
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
-                L.e("读取img 错误:"+e.toString());
             }
-            L.d("rotate :"+rotate);
+
+
             // 1:compress bitmap
             try {
                 BitmapFactory.Options o = new BitmapFactory.Options();
@@ -541,6 +579,7 @@ public class TrustTools <T extends View> {
                     quality = 90;
                 }
             } catch (FileNotFoundException e) {
+                L.e("FileNotFoundException:"+e.toString());
                 System.gc();
             } catch(OutOfMemoryError e){
                 System.gc();
@@ -548,7 +587,7 @@ public class TrustTools <T extends View> {
             }
             // 2:rotate bitmap
             if(f.exists()){
-                f.delete();
+//                f.delete();
             }
             if(rotate>0){
                 Matrix mtx = new Matrix();
@@ -590,6 +629,60 @@ public class TrustTools <T extends View> {
 
 
 
-    //--------------------------------------------------------------------------------------------
+    //--------------------------调用色相头------------------------------------------------------------------
+    public static final int TAKE_PHOtO = 1;
+    public static String  openCamera(Activity activity,int requestCode){
+        Uri imageUri;
+        //创建File 对象，用于存储拍照后的图片
+        File outputImage = new File(activity.getExternalCacheDir(), "output_image.jpg");
+
+        try {
+            if (outputImage.exists()) {
+                outputImage.delete();
+            }
+            outputImage.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (Build.VERSION.SDK_INT >= 24) {
+            imageUri = FileProvider.getUriForFile(activity, "com", outputImage);
+        } else {
+            imageUri = Uri.fromFile(outputImage);
+        }
+
+        //启动相机程序
+        Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        activity.startActivityForResult(intent, requestCode);
+        return imageUri.getPath();
+    }
+
+
+
+
+
+    /**
+     * 打开本地相册
+     *
+     * @param requestCode
+     */
+    public static void openAlbum(Activity activity,int requestCode) {
+        Intent intent = new Intent("android.intent.action.GET_CONTENT");
+        intent.setType("image/*");
+        activity.startActivityForResult(intent, requestCode);
+    }
+
+
+
+    //------------------------------------检查是不是json----------------------------------------------------------------------
+    public static boolean checkIsJson(String value){
+        try {
+            new JSONObject(value);
+        } catch (JSONException e) {
+            return false;
+        }
+        return true;
+    }
 
 }

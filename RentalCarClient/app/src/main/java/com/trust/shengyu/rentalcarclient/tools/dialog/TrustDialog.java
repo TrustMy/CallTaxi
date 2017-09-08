@@ -2,8 +2,12 @@ package com.trust.shengyu.rentalcarclient.tools.dialog;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Context;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -13,6 +17,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.trust.shengyu.rentalcarclient.R;
 import com.trust.shengyu.rentalcarclient.tools.TrustTools;
+import com.trust.shengyu.rentalcarclient.tools.test.ScreenUtil;
 
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 
@@ -252,4 +257,70 @@ public class TrustDialog {
         this.noOneForALongTimeListener = noOneForALongTimeListener;
     }
 
+    /**
+     *
+     * @param context
+     * @param showImg 需要显示的view
+     * @return
+     */
+    public  TrustDialog showChooseGetImgType(Context context,  final int showImg){
+        final Dialog chooseImgTypeDialog = new Dialog(context,R.style.time_dialog);
+        chooseImgTypeDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        chooseImgTypeDialog.setContentView(R.layout.dialog_choose_img_type);
+
+        TextView picturesBtn = (TextView) chooseImgTypeDialog.findViewById(R.id.dialog_choose_img_type_take_pictures);
+        TextView albumBtn = (TextView) chooseImgTypeDialog.findViewById(R.id.dialog_choose_img_type_album);
+
+        picturesBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                chooseImgTypeDialog.dismiss();
+                chooseGetImgTypeListener.CollBack(0,showImg);//拍照
+            }
+        });
+
+        albumBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                chooseImgTypeDialog.dismiss();
+                chooseGetImgTypeListener.CollBack(1,showImg);//相册
+            }
+        });
+
+        chooseImgTypeDialog.setCanceledOnTouchOutside(true);// 设置点击屏幕Dialog消失
+        Window window = chooseImgTypeDialog.getWindow();
+        window.setGravity(Gravity.BOTTOM);
+        WindowManager.LayoutParams lp = window.getAttributes();
+        int width = ScreenUtil.getInstance(context).getScreenWidth();
+        lp.width = width;
+        window.setAttributes(lp);
+        chooseImgTypeDialog.show();
+        return  this;
+    }
+
+    public interface  ChooseGetImgTypeListener{void CollBack(int checkType,int imgType);}
+    public ChooseGetImgTypeListener chooseGetImgTypeListener;
+    public void setOnChooseGetImgTypeListener(ChooseGetImgTypeListener chooseGetImgTypeListener){this.chooseGetImgTypeListener = chooseGetImgTypeListener;};
+
+
+    /**
+     * 显示还车点和取车点dialog
+     * @param activity
+     * @return
+     */
+    public  TrustDialog showCommunityInfo(Activity activity ){
+        final Dialog showCommunityInfo = new Dialog(activity,R.style.time_dialog);
+        showCommunityInfo.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        showCommunityInfo.setContentView(R.layout.dialog_community_info);
+
+        showCommunityInfo.setCanceledOnTouchOutside(true);// 设置点击屏幕Dialog消失
+        Window window = showCommunityInfo.getWindow();
+        window.setGravity(Gravity.BOTTOM);
+        WindowManager.LayoutParams lp = window.getAttributes();
+        int width = ScreenUtil.getInstance(activity).getScreenWidth();
+        lp.width = width;
+        window.setAttributes(lp);
+        showCommunityInfo.show();
+        return this;
+    }
 }

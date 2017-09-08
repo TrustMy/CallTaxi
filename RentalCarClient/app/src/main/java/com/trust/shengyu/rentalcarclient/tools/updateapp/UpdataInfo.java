@@ -14,6 +14,11 @@ public class UpdataInfo
     private String url_server;
 
 
+    public UpdataInfo(String version, String url, String description) {
+        this.version = version;
+        this.url = url;
+        this.description = description;
+    }
 
     public String getUrl_server() {
 

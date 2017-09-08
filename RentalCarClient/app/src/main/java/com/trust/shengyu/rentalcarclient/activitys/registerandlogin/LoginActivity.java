@@ -9,28 +9,44 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.trust.shengyu.rentalcarclient.Config;
 import com.trust.shengyu.rentalcarclient.R;
-import com.trust.shengyu.rentalcarclient.activitys.mainmap.MainMapActivity;
+import com.trust.shengyu.rentalcarclient.activitys.MainControllActivity;
+import com.trust.shengyu.rentalcarclient.activitys.checkinfo.UserMessageActivity;
 import com.trust.shengyu.rentalcarclient.activitys.resetpassword.ResetPasswordActivity;
 import com.trust.shengyu.rentalcarclient.base.BaseActivity;
 import com.trust.shengyu.rentalcarclient.tools.L;
 import com.trust.shengyu.rentalcarclient.tools.TrustTools;
-import com.trust.shengyu.rentalcarclient.tools.beans.UserBean;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.UpdataApp;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.UpdataAppData;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.UserBean;
+import com.trust.shengyu.rentalcarclient.tools.beans.rentalcarbeans.ResultLoginBean;
+import com.trust.shengyu.rentalcarclient.tools.beans.rentalcarbeans.ResultUserInfoBean;
+import com.trust.shengyu.rentalcarclient.tools.gson.TrustAnalysis;
 import com.trust.shengyu.rentalcarclient.tools.request.TrustRequest;
-import com.trust.shengyu.rentalcarclient.tools.test.TimeSelector;
 import com.trust.shengyu.rentalcarclient.tools.updateapp.CheckVersionTask;
+import com.trust.shengyu.rentalcarclient.tools.updateapp.UpdataInfo;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.InputStream;
 import java.util.Map;
 import java.util.WeakHashMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static com.trust.shengyu.rentalcarclient.RentalcarClientConfig.TAG_URL_GET_USER_COUPON;
+import static com.trust.shengyu.rentalcarclient.RentalcarClientConfig.TAG_URL_GET_USER_INFO;
+import static com.trust.shengyu.rentalcarclient.RentalcarClientConfig.TAG_URL_LOGIN;
+import static com.trust.shengyu.rentalcarclient.RentalcarClientConfig.URL_GET_USER_COUPON;
+import static com.trust.shengyu.rentalcarclient.RentalcarClientConfig.URL_GET_USER_INFO;
+import static com.trust.shengyu.rentalcarclient.RentalcarClientConfig.URL_LOGIN;
+import static com.trust.shengyu.rentalcarclient.RentalcarClientConfig.USER_STATUS_CERTIFIED_ERROR;
+import static com.trust.shengyu.rentalcarclient.RentalcarClientConfig.USER_STATUS_CERTIFIED_ING;
+import static com.trust.shengyu.rentalcarclient.RentalcarClientConfig.USER_STATUS_CERTIFIED_SUCCESS;
+import static com.trust.shengyu.rentalcarclient.RentalcarClientConfig.USER_STATUS_NOT_CERTIFIED;
 
 public class LoginActivity extends BaseActivity {
     @BindView(R.id.login_forgetpassword)
@@ -44,7 +60,7 @@ public class LoginActivity extends BaseActivity {
     @BindView(R.id.login_submit)
     Button loginSubmit;
 
-
+    private String user;
     private Context context = LoginActivity.this;
 
     @Override
@@ -54,21 +70,6 @@ public class LoginActivity extends BaseActivity {
         ButterKnife.bind(this);
         initView();
         initDate();
-        Map<String,Object> map = new WeakHashMap<>();
-        map.put("version","1.0.1");
-        map.put("url","www.baidu.com");
-        map.put("description","有新版本,请尽快升级!");
-        L.d(new JSONObject(map).toString());
-
-        TimeSelector timeSelector = new TimeSelector(this, new TimeSelector.ResultHandler() {
-            @Override
-            public void handle(String time) {
-                Toast.makeText(getApplicationContext(), time, Toast.LENGTH_LONG).show();
-            }
-        }, "2015-10-27 09:33", "2016-11-29 21:54");
-
-        timeSelector.setScrollUnit(TimeSelector.SCROLLTYPE.YEAR,TimeSelector.SCROLLTYPE.MONTH,TimeSelector.SCROLLTYPE.DAY,TimeSelector.SCROLLTYPE.HOUR, TimeSelector.SCROLLTYPE.MINUTE);
-        timeSelector.show();
     }
 
     private void initDate() {
@@ -83,21 +84,38 @@ public class LoginActivity extends BaseActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        L.d("版本返回");
-                        InputStream updateMsg = (InputStream) object;
+                        String updateMsg = (String) object;
+                        UpdataApp updataApp = new UpdataApp();
+                        UpdataAppData contentData = new UpdataAppData();
 
                         try {
+                            JSONObject jsonObject = new JSONObject(updateMsg);
+                            updataApp.setStatus(jsonObject.getInt("status"));
+                            updataApp.setInfo(jsonObject.getString("info"));
+                            String content = jsonObject.getString("content");
+
+                            JSONObject contentJson = new JSONObject(content);
+                            contentData.setVersionNo(contentJson.getString("versionNo"));
+                            contentData.setDescription(contentJson.getString("description"));
+                            contentData.setUrl(contentJson.getString("url"));
+                            updataApp.setContent(contentData);
                             Thread thread = new Thread(new CheckVersionTask(context, TrustTools.resultAppVersion(context),
-                                    updateMsg ));
+                                     new UpdataInfo(contentData.getVersionNo(),contentData.getUrl(),contentData.getDescription())));
                             thread.start();
-                        } catch (PackageManager.NameNotFoundException e) {
+
+                        } catch (JSONException e) {
+
                             e.printStackTrace();
                         }
+//
+//
                     }
                 });
             }
-        },"http://139.196.229.233/ebike");
-        s.Request(Config.UPDATA_APP,null,Config.TAG_UPDATA_APP,trustRequest.GET,trustRequest.HeaderNull,null);
+        },"http://192.168.1.123:8082");
+        Map<String,Object> sssss =new WeakHashMap<>();
+        sssss.put("appType",1);
+        s.Request("/rest/appVersion/version",sssss,Config.TAG_UPDATA_APP,trustRequest.GET,trustRequest.HeaderNull,null);
 
     }
 
@@ -113,17 +131,19 @@ public class LoginActivity extends BaseActivity {
         switch (v.getId()){
             case R.id.login_submit:
 
-                String user = baseCheckIsNull(loginUser, "账号错误!");
+                user = baseCheckIsNull(loginUser, "账号错误!");
                 if (user != null) {
                     String pwd = baseCheckIsNull(loginPwd, "密码错误!");
                     if (pwd != null) {
 //                showSnackbar(loginSubmit,"说明",null);
                         Config.userPhone = user;
+                        String version  =TrustTools.resultAppVersion(this);
                         Map<String,Object> map = new WeakHashMap<>();
                         map.put("userName",user);
                         map.put("password",pwd);
                         map.put("userType",Config.UserTypeClient);
-                        requestCallBeack(Config.CLIENT_LOGIN,map,Config.TAG_CLIENT_LOGIN,trustRequest.POST,null);
+                        map.put("appVersion",version!=null?version:"1.0.0");
+                        requestCallBeack(URL_LOGIN,map,TAG_URL_LOGIN,trustRequest.POST,null);
 
                     }
                 }
@@ -151,17 +171,77 @@ public class LoginActivity extends BaseActivity {
     public void successCallBeack(Object obj, int type) {
         String msg = (String) obj;
         switch (type) {
-            case Config.TAG_CLIENT_LOGIN:
-                requestCallBeack(Config.CLIENT_INFORMATION,null,Config.TAG_CLIENT_INFORMATION,
-                        trustRequest.GET,Config.token);
+//            case Config.TAG_CLIENT_LOGIN:
+//                requestCallBeack(Config.CLIENT_INFORMATION,null,Config.TAG_CLIENT_INFORMATION,
+//                        trustRequest.GET,Config.token);
+//                break;
+//
+//            case Config.TAG_CLIENT_INFORMATION:
+//                UserBean bean = gson.fromJson(msg,UserBean.class);
+//                if(getResultStatus(bean.getStatus(),msg)){
+//                    startActivity(new Intent(LoginActivity.this,UserMessageActivity.class));
+//                }
+//                break;
+            case TAG_URL_LOGIN:
+                if (TrustTools.checkIsJson(msg)) {
+                    ResultLoginBean loginBean = TrustAnalysis.resultTrustBean(msg,ResultLoginBean.class);
+                    if (getResultStatus(loginBean.getStatus(),msg)) {
+
+                        Config.PHONE = user;
+//                    startActivity(new Intent(LoginActivity.this,UserMessageActivity.class));
+                        Map<String,Object> map = new WeakHashMap<>();
+                        map.put("phone",user);
+                        requestCallBeack(URL_GET_USER_INFO,map,TAG_URL_GET_USER_INFO,trustRequest.GET_NO_PARAMETER_Name,
+                                Config.token);
+                    }
+                }else{
+                    showToast("服务器返回的数据不是json:"+msg);
+                }
+
+                break;
+            case TAG_URL_GET_USER_INFO:
+
+                ResultUserInfoBean resultUserInfoBean = TrustAnalysis.resultTrustBean(msg,ResultUserInfoBean.class);
+                if (getResultStatus(resultUserInfoBean.getStatus(),msg)) {
+                    checkUserStatus(resultUserInfoBean);
+
+                    L.d("当前 信息getStatus:"+resultUserInfoBean.getContent().getStatus());
+                    Map<String,Object> map = new WeakHashMap<>();
+                    map.put("phone",user);
+                    requestCallBeack(URL_GET_USER_COUPON,map,TAG_URL_GET_USER_COUPON,trustRequest.GET_NO_PARAMETER_Name,
+                            Config.token);
+                }
+
                 break;
 
-            case Config.TAG_CLIENT_INFORMATION:
-                UserBean bean = gson.fromJson(msg,UserBean.class);
-                if(getResultStatus(bean.getStatus(),msg)){
-                    startActivity(new Intent(LoginActivity.this,MainMapActivity.class));
-                }
+            case TAG_URL_GET_USER_COUPON:
+                L.d("优惠劵信息:"+msg);
+
                 break;
         }
+    }
+
+    private void checkUserStatus( ResultUserInfoBean resultUserInfoBean) {
+        Intent intent = new Intent();
+        switch (resultUserInfoBean.getContent().getStatus()) {
+            case USER_STATUS_NOT_CERTIFIED://没有认证
+                intent.putExtra("userStatus",USER_STATUS_NOT_CERTIFIED);
+                intent.setClass(context,UserMessageActivity.class);
+                break;
+            case USER_STATUS_CERTIFIED_ING://认证中
+                intent.putExtra("userStatus",USER_STATUS_CERTIFIED_ING);
+                intent.setClass(context,MainControllActivity.class);
+                break;
+            case USER_STATUS_CERTIFIED_SUCCESS://认证通过
+                intent.putExtra("userStatus",USER_STATUS_CERTIFIED_SUCCESS);
+                intent.setClass(context,MainControllActivity.class);
+                break;
+            case USER_STATUS_CERTIFIED_ERROR://认证失败
+                intent.putExtra("userStatus",USER_STATUS_CERTIFIED_ERROR);
+                intent.putExtra("errorInfo",resultUserInfoBean.getContent().getDescription());
+                intent.setClass(context,UserMessageActivity.class);
+                break;
+        }
+        startActivity(intent);
     }
 }

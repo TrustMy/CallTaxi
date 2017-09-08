@@ -40,6 +40,20 @@ public class Maker {
                 0  ////偏航角 0~360° (正北方为0)
         )));
     }
+
+    /**
+     * 移动视角中心
+     * @param map
+     *
+     */
+    public  static void mobileMarker(AMap map, double lat, double lon){
+        map.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(
+                new LatLng(lat,lon),//新的中心点坐标
+                500, //新的缩放级别
+                0, //俯仰角0°~45°（垂直与地图时为0）
+                0  ////偏航角 0~360° (正北方为0)
+        )));
+    }
     public static void showMakerGif(AMap aMap, LatLng data , int [] imgs , int size){
 
         MarkerOptions markerOptions = new MarkerOptions();

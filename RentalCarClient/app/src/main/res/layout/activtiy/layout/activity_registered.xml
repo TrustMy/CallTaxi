@@ -78,7 +78,7 @@
             android:textColorHint="@color/colorWhite"
             android:layout_marginLeft="@dimen/x8"
             android:hint="请输入验证码"
-            android:inputType="numberPassword"
+            android:inputType="number"
             android:textColor="@color/colorAccent"
             android:id="@+id/registere_verification_code"
             android:gravity="center_vertical"

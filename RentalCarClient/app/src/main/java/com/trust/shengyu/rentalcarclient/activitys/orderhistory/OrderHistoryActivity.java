@@ -13,7 +13,7 @@ import com.trust.shengyu.rentalcarclient.R;
 import com.trust.shengyu.rentalcarclient.base.BaseActivity;
 import com.trust.shengyu.rentalcarclient.base.BaseRecyclerViewAdapter;
 import com.trust.shengyu.rentalcarclient.tools.L;
-import com.trust.shengyu.rentalcarclient.tools.beans.OrderHistoryBean;
+import com.trust.shengyu.rentalcarclient.tools.beans.oldbeans.OrderHistoryBean;
 
 import java.util.ArrayList;
 import java.util.List;

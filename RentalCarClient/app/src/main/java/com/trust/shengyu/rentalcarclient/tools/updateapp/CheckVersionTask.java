@@ -39,20 +39,20 @@ public class CheckVersionTask implements Runnable {
 
     private String localVersion;
 
-    public CheckVersionTask(Context context , String localVersion ,InputStream is ) {
+    public CheckVersionTask(Context context , String localVersion ,UpdataInfo info ) {
         this.context = context;
         this.localVersion = localVersion;
-        this.is = is;
+        this.info = info;
     }
 
     public void run()
     {
 
-        try {
-            info = UpdataInfoParser.getUpdataInfo(is);
-        } catch (Exception e1) {
-            e1.printStackTrace();
-        }
+//        try {
+//            info = UpdataInfoParser.getUpdataInfo(is);
+//        } catch (Exception e1) {
+//            e1.printStackTrace();
+//        }
 
         if (!info.getVersion().equals(localVersion)) {
                 Message msg = new Message();

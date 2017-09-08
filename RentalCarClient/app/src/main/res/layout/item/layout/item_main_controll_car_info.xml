@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <LinearLayout
+        android:gravity="center_vertical"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/y27"
+        android:orientation="horizontal"
+        android:layout_margin="@dimen/x4">
+
+        <ImageView
+            android:layout_marginLeft="@dimen/x5"
+            android:src="@mipmap/ic_launcher"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+
+        <LinearLayout
+            android:layout_marginLeft="@dimen/x10"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/item_main_controll_car_info_car_models"
+                android:text="车型"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+
+            <TextView
+                android:id="@+id/item_main_controll_car_info_car_number"
+                android:text="车牌号"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+
+        <View
+            android:layout_marginLeft="@dimen/x5"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/colorGray"/>
+
+        <TextView
+            android:textColor="@color/colorOrange"
+            android:id="@+id/item_main_controll_car_info_car_mileage"
+            android:layout_marginLeft="@dimen/x5"
+            android:text="132"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:text="km"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <View
+            android:layout_marginLeft="@dimen/x10"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="@color/colorGray"/>
+
+
+        <TextView
+            android:layout_marginLeft="@dimen/x10"
+            android:text="电量"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+
+        <TextView
+            android:textColor="@color/colorOrange"
+            android:id="@+id/item_main_controll_car_info_car_electricity"
+            android:layout_marginLeft="@dimen/x5"
+            android:text="80%"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+
+        <Button
+            android:id="@+id/item_main_controll_car_info_car_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/x5"
+            android:text="可租用" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorGray"/>
+
+</LinearLayout>

@@ -4,6 +4,7 @@ import com.trust.shengyu.rentalcarclient.Config;
 import com.trust.shengyu.rentalcarclient.tools.L;
 import com.trust.shengyu.rentalcarclient.tools.request.ssl.TrustAllCerts;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -20,12 +21,14 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import static com.trust.shengyu.rentalcarclient.RentalcarClientConfig.TAG_URL_LOGIN;
+
 /**
  * Created by Trust on 2017/8/7.
  */
 
 public class TrustRequest {
-    public  int GET = 0x0001,POST = 0x0002,PUT = 0x0003;
+    public  int GET = 0x0001,POST = 0x0002,PUT = 0x0003,GET_NO_PARAMETER_Name = 0x0004;//GET_NO_PARAMETER_Name  GET请求 参数加名称直接 放参数
     public  final int HeaderNull = 0;
     public  final String TokenNull = null;
     public  final boolean addHeader = true,noAdd = false,addToken = true;
@@ -65,7 +68,7 @@ public class TrustRequest {
         String msg = null;
         String urls = serverUrl+url;
         Request request = null;
-
+        L.d("requestType:"+requestType);
         switch (requestHeader){
             case HeaderJson:
                 if (map != null) {
@@ -89,7 +92,7 @@ public class TrustRequest {
         if (msg != null) {
             L.d("Request 发送的json:"+msg);
         }
-            if(requestType == GET){
+            if(requestType == GET || requestType == GET_NO_PARAMETER_Name){
                 if (token != null) {
                     builder.addHeader("Token",token);
 
@@ -99,12 +102,20 @@ public class TrustRequest {
                     for (Map.Entry<String, Object> entry : map.entrySet()){
                         if(sb == null){
                             sb = new StringBuffer();
-                            if (entry.getValue() instanceof String){
-                                sb.append("?"+entry.getKey()+"="+entry.getValue()+"");
-                            }else{
-                                sb.append("?"+entry.getKey()+"="+entry.getValue());
-                            }
 
+                            if (requestType == GET_NO_PARAMETER_Name) {
+                                if (entry.getValue() instanceof String){
+                                    sb.append(entry.getValue());
+                                }else{
+                                    sb.append("?"+entry.getKey()+"="+entry.getValue());
+                                }
+                            }else{
+                                if (entry.getValue() instanceof String){
+                                    sb.append("?"+entry.getKey()+"="+entry.getValue()+"");
+                                }else{
+                                    sb.append("?"+entry.getKey()+"="+entry.getValue());
+                                }
+                            }
                         }else{
                             if (entry.getValue() instanceof String){
                                 sb.append("&"+entry.getKey()+"="+entry.getValue()+"");
@@ -114,7 +125,7 @@ public class TrustRequest {
 
                         }
                     }
-                    builder.addHeader("Token",token);
+
                     L.d("get usrl :"+urls+ sb.toString());
                     request =  builder.get().url(urls+ sb.toString()).build();
                 }else{
@@ -217,20 +228,21 @@ public class TrustRequest {
             public void onResponse(Call call, Response response) throws IOException {
                 L.d("onResponse:"+response.toString());
                 Headers headers = response.headers();
-                Object json;
+                String json;
                 if(response.code() == 200){
                     if(type == Config.TAG_UPDATA_APP){
-                        json = response.body().byteStream();
+                        json = response.body().string();
                     }else{
                         json = response.body().string();
                     }
-                    if (type == Config.TAG_CLIENT_LOGIN){
+                    if (type == TAG_URL_LOGIN){
                         Config.token = response.header("Token");
                         L.d("token:"+   Config.token+"headers.toString():"+headers.toString());
                     }
                     L.d("json:"+json.toString());
                     if(json != null ){
-                        resultCallBack.CallBack(type, Config.SUCCESS,json);
+                            resultCallBack.CallBack(type, Config.SUCCESS,json);
+
 //                        ResultBean bean = gson.fromJson(json, ResultBean.class);
 //                        if(bean!=null && bean.getStatus()){
 ////                            sendMessage(bean, CaConfig.SUCCESS,type);
@@ -256,6 +268,10 @@ public class TrustRequest {
             }
         });
     }
+
+
+
+
 
 
 }

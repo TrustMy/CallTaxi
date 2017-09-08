@@ -17,12 +17,15 @@ public class Config {
     public final static int SUCCESS = 1;
     public final static int ERROR = 0;
 
+    public static String PHONE;
+
+
 
     //----------------------测试参数------------------------------------
     //tcp://192.168.1.160:9001 本地测试   //阿里云  tcp://139.196.229.233:9001
-    public final static String TestMqttServer = "tcp://192.168.1.111:9001";
-    public final static String TestUserName = "mqtt_sy_dataserver";
-    public final static String TestPassWord = "mqtt_test";
+    public final static String TestMqttServer = "tcp://192.168.1.110:29001";
+    public final static String TestUserName = "13892929789";
+    public final static String TestPassWord = "111111";
     public final static String TestClientId = "mqtt_sy_dataserver";
     public  static String [] TestTopics = {"book/order/"+"5001"};//订阅后面是他的Customer
     public final static String sendTopic = "Placeanorder";
@@ -40,7 +43,8 @@ public class Config {
 
     //------------------------服务器接口--------------------------------
     //映射 http://192.168.1.111:8082/SYCloudPlatform-1.0   //本地  http://192.168.1.134:8082
-    public static String SERVER_URL = "http://192.168.1.111:8082/SYCloudPlatform-1.0";//服务器地址
+    public static String SERVER_URL = "http://192.168.1.102:20080/tomcat";//服务器地址
+//    public static String SERVER_URL = "http://192.168.1.134:8081";//本地服务器地址
     public static String PLACE_AN_ORDER = "/rest/book";//下订单
     public static String CANCEL_ORDER = "/rest/cancel";//取消订单
     public static String SERACH_EXECUTE_ORDER = "/rest/executing";//查询正在执行订单
@@ -54,6 +58,14 @@ public class Config {
     public static String REPLACE_AN_ORDER = "/rest/match";//下订单后 长时间无人接单 重新请求接口
     public static String UPDATA_APP = "/update/ebikeUpdate.xml";//版本升级
 
+
+    public static String REGISTER ="/register/customer";//注册
+    public static String LOGIN = "/rest/user/login";//登录
+    public static String VERIFICATION_CODE = "/register/applySmsCode/";//获取验证码
+    public static String GET_USER_INFO = "/rest/customer/";//获取用户当前信息
+    public static String GET_USER_COUPON = "/rest/coupon/";//获取用户优惠劵
+    public static String RETRIEVE_THE_PASSWORD = "/register/retrievePassword";//找回密码
+    public static String IMPROVE_USER_INFO = "/rest/customer/";//用户信息完善
     //-----------------------请求tag------------------------------------
     public static final int TAG_PLACE_AN_ORDER = 0x00001;//下订单
     public static final int TAG_CANCEL_ORDER = 0x00002;//取消订单
