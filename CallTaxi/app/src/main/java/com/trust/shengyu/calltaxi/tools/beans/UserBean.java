@@ -8,106 +8,152 @@ public class UserBean {
 
 
     /**
-     * uid : 14
-     * nickName : W2J27RJC97
-     * customerId : 5001
-     * sex : 0
-     * cellPhone : 13892929789
-     * password : 111111
-     * status : 0
-     * token : MS8gxxR9lhjv/jEvcCx6RaitSTj+pqr1rMQu/Fw/nKaZQwbJ2iTCS0H6GqH2QMgp
-     * regTime : Aug 22, 2017 3:22:42 PM
-     * updateTime : Aug 22, 2017 5:05:26 PM
+     * status : 1
+     * info : 信息获取成功
+     * code :
+     * content : {"uid":1,"nickName":"3B7o5IB0D0","customerId":5001,"sex":0,"cellPhone":"13892929789","password":"1111","status":0,"token":"MS8gxxR9lhjv/jEvcCx6RQCHLLlmXy7gINsK/riTa6plHU59Dj4KkLMA6Sq2QIOv","regTime":"Sep 7, 2017 10:36:59 AM","updateTime":"Sep 12, 2017 10:07:35 AM"}
      */
 
-    private int uid;
-    private String nickName;
-    private int customerId;
-    private int sex;
-    private String cellPhone;
-    private String password;
     private int status;
-    private String token;
-    private String regTime;
-    private String updateTime;
+    private String info;
+    private String code;
+    private ContentBean content;
 
-    public void setUid(int uid) {
-        this.uid = uid;
-    }
-
-    public void setNickName(String nickName) {
-        this.nickName = nickName;
-    }
-
-    public void setCustomerId(int customerId) {
-        this.customerId = customerId;
-    }
-
-    public void setSex(int sex) {
-        this.sex = sex;
-    }
-
-    public void setCellPhone(String cellPhone) {
-        this.cellPhone = cellPhone;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
+    public int getStatus() {
+        return status;
     }
 
     public void setStatus(int status) {
         this.status = status;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public String getInfo() {
+        return info;
     }
 
-    public void setRegTime(String regTime) {
-        this.regTime = regTime;
+    public void setInfo(String info) {
+        this.info = info;
     }
 
-    public void setUpdateTime(String updateTime) {
-        this.updateTime = updateTime;
+    public String getCode() {
+        return code;
     }
 
-    public int getUid() {
-        return uid;
+    public void setCode(String code) {
+        this.code = code;
     }
 
-    public String getNickName() {
-        return nickName;
+    public ContentBean getContent() {
+        return content;
     }
 
-    public int getCustomerId() {
-        return customerId;
+    public void setContent(ContentBean content) {
+        this.content = content;
     }
 
-    public int getSex() {
-        return sex;
-    }
+    public static class ContentBean {
+        /**
+         * uid : 1
+         * nickName : 3B7o5IB0D0
+         * customerId : 5001
+         * sex : 0
+         * cellPhone : 13892929789
+         * password : 1111
+         * status : 0
+         * token : MS8gxxR9lhjv/jEvcCx6RQCHLLlmXy7gINsK/riTa6plHU59Dj4KkLMA6Sq2QIOv
+         * regTime : Sep 7, 2017 10:36:59 AM
+         * updateTime : Sep 12, 2017 10:07:35 AM
+         */
 
-    public String getCellPhone() {
-        return cellPhone;
-    }
+        private int uid;
+        private String nickName;
+        private int customerId;
+        private int sex;
+        private String cellPhone;
+        private String password;
+        private int status;
+        private String token;
+        private String regTime;
+        private String updateTime;
 
-    public String getPassword() {
-        return password;
-    }
+        public int getUid() {
+            return uid;
+        }
 
-    public int getStatus() {
-        return status;
-    }
+        public void setUid(int uid) {
+            this.uid = uid;
+        }
 
-    public String getToken() {
-        return token;
-    }
+        public String getNickName() {
+            return nickName;
+        }
 
-    public String getRegTime() {
-        return regTime;
-    }
+        public void setNickName(String nickName) {
+            this.nickName = nickName;
+        }
 
-    public String getUpdateTime() {
-        return updateTime;
+        public int getCustomerId() {
+            return customerId;
+        }
+
+        public void setCustomerId(int customerId) {
+            this.customerId = customerId;
+        }
+
+        public int getSex() {
+            return sex;
+        }
+
+        public void setSex(int sex) {
+            this.sex = sex;
+        }
+
+        public String getCellPhone() {
+            return cellPhone;
+        }
+
+        public void setCellPhone(String cellPhone) {
+            this.cellPhone = cellPhone;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public int getStatus() {
+            return status;
+        }
+
+        public void setStatus(int status) {
+            this.status = status;
+        }
+
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
+
+        public String getRegTime() {
+            return regTime;
+        }
+
+        public void setRegTime(String regTime) {
+            this.regTime = regTime;
+        }
+
+        public String getUpdateTime() {
+            return updateTime;
+        }
+
+        public void setUpdateTime(String updateTime) {
+            this.updateTime = updateTime;
+        }
     }
 }

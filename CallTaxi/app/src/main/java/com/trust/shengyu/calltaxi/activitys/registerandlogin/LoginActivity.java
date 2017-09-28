@@ -14,6 +14,8 @@ import com.trust.shengyu.calltaxi.R;
 import com.trust.shengyu.calltaxi.activitys.mainmap.MainMapActivity;
 import com.trust.shengyu.calltaxi.activitys.resetpassword.ResetPasswordActivity;
 import com.trust.shengyu.calltaxi.base.BaseActivity;
+import com.trust.shengyu.calltaxi.mqtt.TrustServer;
+import com.trust.shengyu.calltaxi.tools.AndroidPermissionTool;
 import com.trust.shengyu.calltaxi.tools.L;
 import com.trust.shengyu.calltaxi.tools.beans.UserBean;
 
@@ -47,11 +49,10 @@ public class LoginActivity extends BaseActivity {
         ButterKnife.bind(this);
         initView();
         initDate();
-        Map<String,Object> map = new WeakHashMap<>();
-        map.put("version","1.0.1");
-        map.put("url","www.baidu.com");
-        map.put("description","有新版本,请尽快升级!");
-        L.d(new JSONObject(map).toString());
+
+
+        AndroidPermissionTool tool = new AndroidPermissionTool();
+        tool.checkPermission(this);
     }
 
     private void initDate() {
@@ -123,6 +124,12 @@ public class LoginActivity extends BaseActivity {
             case Config.TAG_CLIENT_INFORMATION:
                 UserBean bean = gson.fromJson(msg,UserBean.class);
                 if(getResultStatus(bean.getStatus(),msg)){
+                    Config.userId = bean.getContent().getCustomerId();
+                    L.d("登录成功 :"+Config.userId);
+
+                    if(mqttServer == null){
+                        bindService(new Intent(context,TrustServer.class),serviceConnection, Context.BIND_AUTO_CREATE);
+                    }
                     startActivity(new Intent(LoginActivity.this,MainMapActivity.class));
                 }
                 break;

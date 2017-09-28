@@ -19,7 +19,7 @@
 
     <EditText
         android:id="@+id/select_end_city"
-        android:hint="输入城市默认为北京"
+        android:hint="输入城市默认为上海"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

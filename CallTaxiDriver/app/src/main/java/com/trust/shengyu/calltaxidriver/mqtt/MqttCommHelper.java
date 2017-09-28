@@ -3,6 +3,7 @@ package com.trust.shengyu.calltaxidriver.mqtt;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.widget.Toast;
 
 import com.trust.shengyu.calltaxidriver.Config;
 import com.trust.shengyu.calltaxidriver.base.BaseActivity;
@@ -59,6 +60,7 @@ public  class MqttCommHelper {
     protected int[] qoss = {1,1};
     protected String sendTopic;
     protected Context context;
+    protected String  SubmitTopic ;
 
 
     public interface onMqttCallBackResultListener{
@@ -191,7 +193,7 @@ public  class MqttCommHelper {
             doConnect = false;
                 // 订阅myTopic话题
 //                client.subscribe(myTopic,1);
-                subscribeTopic(SubmitTopics[0],1);
+                subscribeTopic(SubmitTopic,1);
             mqttConnectionStatus(Config.MQTT_TYPE_CONNECTION_SUCCESS);
             L.d(" mqtt connection success conOpt.isAutomaticReconnect():"+conOpt.isAutomaticReconnect());
         }
@@ -273,7 +275,7 @@ public  class MqttCommHelper {
         }
     }
 
-    public  void publish(String topic ,Integer qos  ,String msg){
+    public  void publish(String topic , Integer qos  , final String msg){
         synchronized (this){
             if( client!=null){
                 //端口  8878   注册
@@ -282,6 +284,12 @@ public  class MqttCommHelper {
                     try {
                         L.d("publish :"+msg);
                         client.publish(topic, msg.getBytes(), qos.intValue(), retained.booleanValue());
+                        Config.activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(context,"你发送的:"+msg,Toast.LENGTH_LONG).show();
+                            }
+                        });
 //                        dbManager.addData("发送的json:"+msg+"|"+TrustTools.getSystemTimeString());
                     } catch (MqttException e) {
                         e.printStackTrace();

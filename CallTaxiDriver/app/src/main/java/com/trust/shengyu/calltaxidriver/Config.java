@@ -22,13 +22,15 @@ public class Config {
     //----------------------测试参数------------------------------------
 
     //tcp://192.168.1.160:9001 本地测试   //阿里云  tcp://139.196.229.233:9001
-    public final static String TestMqttServer = "tcp://192.168.1.111:9001";
-    public final static String TestUserName = "changan_yubei_1180";
+    //外网访问  tcp://58.246.120.86:9001
+    public final static String TestMqttServer = "tcp://58.246.120.86:9001";
+    public final static String TestUserName = "ls_driver";
     public final static String TestPassWord = "mqtt_test";
-    public final static String TestClientId = "changan_yubei_1180";
-    public final static String [] TestTopics = {"book/order/"+"1001"};//订阅后面是他的Customer
+    public  static String TestClientId = Config.driver + "";
+    public  static String [] TestTopics = {"book/order/"+Config.driver};//订阅后面是他的Customer
 
     public final static String sendTopic = "orderStatus";
+    public static String CSubmitTopic ;
 
 
     //-----------------------Mqtt消息tag--------------------------------
@@ -41,8 +43,9 @@ public class Config {
     public final static int MQTT_TYPE_CONNECTION_SUCCESS = 0x006;//连接成功
 
     //映射 http://192.168.1.111:8082/SYCloudPlatform-1.0   //本地  http://192.168.1.134:8082
+    //外网  //58.246.120.86:8081/tomcat
     //------------------------服务器接口--------------------------------
-    public static String SERVER_URL = "http://192.168.1.111:8082/SYCloudPlatform-1.0";//服务器地址
+    public static String SERVER_URL = "http://58.246.120.86:8081/tomcat";//服务器地址
     public static String PLACE_AN_ORDER = "/rest/book";//下订单
     public static String CANCEL_ORDER = "/rest/cancel";//取消订单
     public static String SERACH_EXECUTE_ORDER = "/rest/executing";//查询正在执行订单
@@ -52,7 +55,7 @@ public class Config {
     public static String DRIVER_START_ORDER = "/rest/begin";//司机开始订单
     public static String DRIVER_END_ORDER = "/rest/finish";//司机结束订单
     public static String DRIVER_GET_TOKEN = "/rest/user/login";//司机端获取token
-    public static String DRIVER_INFORMATION = "/rest/driver";//司机获取token后 在获取信息
+    public static String DRIVER_INFORMATION = "/rest/driver";//司机 获取信息
 
 
 
@@ -84,8 +87,9 @@ public class Config {
     //-----------------------GPS配置---------------------------------------
     public static final int typeGPS = 0x9999,typeAlarm = 0x9998,typeTrip= 0x9997;
     public static final int EngineStatus =  3;//引擎状态
-    public static int driver = 1180;
+    public static int driver ;
     public static LinkedList taskQueue = new LinkedList();
+    public static String driverPhone;//司机账号
     public static final String topicSubscription = "changan/yubei/apk/hotfix",topicGps = "data/gps",topicAlarm = "data/alarm",
             topicTrip = "data/trip";
 

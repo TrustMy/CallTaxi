@@ -3,12 +3,15 @@ package com.trust.shengyu.calltaxi.mqtt;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.trust.shengyu.calltaxi.Config;
+import com.trust.shengyu.calltaxi.R;
 import com.trust.shengyu.calltaxi.base.BaseActivity;
 import com.trust.shengyu.calltaxi.mqtt.network.CallTaxiCommHelper;
 import com.trust.shengyu.calltaxi.tools.L;
@@ -37,6 +40,7 @@ public class TrustServer extends Service {
     LinkedList<MqttBean> otherTaskQueue = new LinkedList();
     public boolean appStatus = false;
     GpsHelper gpsHelper;
+    private MediaPlayer mp;
     protected static ExecutorService threadPool = Executors.newCachedThreadPool();
     @Nullable
     @Override
@@ -50,9 +54,10 @@ public class TrustServer extends Service {
         if (callTaxiCommHelper == null) {
             callTaxiCommHelper = new CallTaxiCommHelper(context);
             callTaxiCommHelper.setOnMqttCallBackResultListener(onMqttCallBackResultListener);
-
+            doClientConnection();
             gson = new Gson();
             gpsHelper = new GpsHelper();
+            mp = MediaPlayer.create(context, R.raw.music);
             threadPool.execute(gpsHelper);
             try {
                 Thread.sleep(1000);
@@ -82,7 +87,8 @@ public class TrustServer extends Service {
 //                }
 //            }else{
                 //分类 通知类型
-                if (topic.equals(Config.TestTopics[0])){
+                if (topic.equals(Config.CSubmintTopic)){
+                    mp.start();
                     resultMqttTypr(msg.toString());
                 }else{
                     //其他同志
@@ -124,6 +130,12 @@ public class TrustServer extends Service {
                     baseActivity.resultMqttTypeRefusedOrder(refusedOrderBean);
                     break;
                 case Config.MQTT_TYPE_NOBODY_ORDER:
+                    Config.activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(context,"暂时没有匹配到合适司机,请耐心等待或取消订单!",Toast.LENGTH_LONG).show();
+                        }
+                    });
                     NObodyOrderBean nObodyOrderBean = gson.fromJson(msg,NObodyOrderBean.class);
                     baseActivity.resultMqttTypeNobodyOrder(nObodyOrderBean);
                 default:

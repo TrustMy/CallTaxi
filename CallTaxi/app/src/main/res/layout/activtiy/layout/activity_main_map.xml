@@ -58,6 +58,7 @@
 
 
                         <Button
+                            android:visibility="gone"
                             android:id="@+id/clear"
                             android:text="删除数据"
                             android:layout_width="wrap_content"

@@ -170,7 +170,9 @@ public class TrustDialog {
             trustTools.setCountdown(120).setCountdownCallBack(new TrustTools.CountdownCallBack() {
                 @Override
                 public void callBackCountDown() {
-                    dialog.dismiss();
+                    if (dialog != null) {
+                        dialog.dismiss();
+                    }
                 }
             });
         }

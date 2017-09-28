@@ -40,8 +40,10 @@ import com.trust.shengyu.calltaxi.activitys.orderhistory.OrderHistoryActivity;
 import com.trust.shengyu.calltaxi.activitys.orderstatus.OrderStatusActivity;
 import com.trust.shengyu.calltaxi.activitys.selectend.SelectEndActivity;
 import com.trust.shengyu.calltaxi.base.BaseActivity;
+import com.trust.shengyu.calltaxi.mqtt.TrustServer;
 import com.trust.shengyu.calltaxi.tools.L;
 import com.trust.shengyu.calltaxi.tools.TrustTools;
+import com.trust.shengyu.calltaxi.tools.beans.NObodyOrderBean;
 import com.trust.shengyu.calltaxi.tools.beans.PlaceAnOrderBean;
 import com.trust.shengyu.calltaxi.tools.beans.RefusedOrderBean;
 import com.trust.shengyu.calltaxi.tools.beans.SelectOrdersBean;
@@ -126,7 +128,6 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
 
         initMap();
         initView();
-        mqttServer.doClientConnection();
 
 
 //        if(mqttServer.resultOrderTaskQueue()){
@@ -208,7 +209,7 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
         });
 
         Map<String,Object> map = new WeakHashMap<>();
-        map.put("driver",Config.CustomerId);
+        map.put("driver",Config.userId+"");
         map.put("status",Config.User);
         requestCallBeack(Config.SERACH_EXECUTE_ORDER,map,Config.TAG_SERACH_EXECUTE_ORDER,
                 trustRequest.GET,Config.token);
@@ -238,7 +239,7 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
                 break;
 
             case R.id.main_drawerlayout_trip_history_btn:
-                startActivity(new Intent(context, OrderHistoryActivity.class));
+//                startActivity(new Intent(context, OrderHistoryActivity.class));
                 break;
 
             case R.id.main_map_end_tv:
@@ -246,17 +247,25 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
                 break;
 
             case R.id.main_map_order_submit_btn:
-                Map<String,Object> map = new WeakHashMap<>();
-                map.put("startAddress",startName);
-                map.put("endAddress",endName);
-                map.put("customer",Config.CustomerId);
-                map.put("locationLat",myLat);
-                map.put("locationLng",myLon);
 
-                map.put("estimateDuration",Config.OrderEstimateDuration);
-                map.put("estimatesAmount",taxiCast + 0.1);
+                if (myLat != 0.0 && myLon != 0.0) {
+                    Map<String,Object> map = new WeakHashMap<>();
+                    map.put("startAddress",startName);
+                    map.put("endAddress",endName);
+                    map.put("customer",Config.userId+"");
+                    map.put("locationLat",myLat);
+                    map.put("locationLng",myLon);
 
-                requestCallBeack(Config.PLACE_AN_ORDER,map,Config.TAG_PLACE_AN_ORDER,trustRequest.POST,Config.token);
+                    map.put("estimateDuration",Config.OrderEstimateDuration);
+                    map.put("estimatesAmount",taxiCast + 0.1);
+
+                    requestCallBeack(Config.PLACE_AN_ORDER,map,Config.TAG_PLACE_AN_ORDER,trustRequest.POST,Config.token);
+
+                }else{
+                    L.d("定位坐标:"+myLat+"|"+myLon);
+                    showToast("定位失败,请确保GPS有信号!"+myLat+"|"+myLon);
+                }
+
 
 //                startActivity(new Intent(context,OrderStatusActivity.class));
 
@@ -268,8 +277,8 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
      * 在地图上添加marker
      */
     private void addMarkersToMap() {
-        addMarkerInScreenCenter();
-        addGrowMarker();
+//        addMarkerInScreenCenter();
+//        addGrowMarker();
     }
 
 
@@ -576,18 +585,24 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
                 orderNo);
         startActivity(intent);
     }
-
-    private static double myLat = 31.232185,myLon = 121.413141;
+    private static double myLat =31.232186,myLon =121.4132;
 
     public static LocationInterface locationInterface = new LocationInterface() {
         @Override
-        public void getLocation(Location location) {
+        public void getLocation(final Location location) {
             if (location != null){
+                Config.activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
 
-                myLat = TrustTools.round(location.getLatitude(),6);
-                myLon = TrustTools.round(location.getLongitude(),6);
+                        myLat = TrustTools.round(location.getLatitude(),6);
+                        myLon = TrustTools.round(location.getLongitude(),6);
+                        L.d("myLat:"+myLat+"|myLon:"+myLon);
+                    }
+                });
+
             }
-            L.d("myLat:"+myLat+"|myLon:"+myLon);
+
         }
     };
 
@@ -603,5 +618,11 @@ public class MainMapActivity extends BaseActivity implements Positioning.Positio
                 dialog.dismiss();
             }
         });
+    }
+
+
+    @Override
+    public void resultMqttTypeNobodyOrder(NObodyOrderBean bean) {
+        showSnackbar(mapView, "暂时没有匹配到合适司机,请耐心等待或取消订单!", null);
     }
 }

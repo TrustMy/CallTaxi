@@ -26,12 +26,14 @@
         android:layout_height="match_parent">
 
         <include layout="@layout/map_layout"
+            android:layout_below="@+id/aaaaaaaaaa"
             android:id="@+id/order_status_map"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
         </include>
 
         <LinearLayout
+            android:id="@+id/aaaaaaaaaa"
             android:layout_marginLeft="@dimen/x6"
             android:layout_marginRight="@dimen/x6"
             android:layout_width="match_parent"

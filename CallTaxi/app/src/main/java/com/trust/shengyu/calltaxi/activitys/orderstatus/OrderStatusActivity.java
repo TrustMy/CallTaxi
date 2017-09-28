@@ -1,6 +1,10 @@
 package com.trust.shengyu.calltaxi.activitys.orderstatus;
 
 import android.app.Dialog;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.view.View;
@@ -8,9 +12,12 @@ import android.widget.Button;
 
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.MapView;
+import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.MyLocationStyle;
 import com.trust.shengyu.calltaxi.Config;
 import com.trust.shengyu.calltaxi.R;
 import com.trust.shengyu.calltaxi.base.BaseActivity;
+import com.trust.shengyu.calltaxi.mqtt.TrustServer;
 import com.trust.shengyu.calltaxi.tools.L;
 import com.trust.shengyu.calltaxi.tools.TrustTools;
 import com.trust.shengyu.calltaxi.tools.beans.Bean;
@@ -18,6 +25,7 @@ import com.trust.shengyu.calltaxi.tools.beans.MqttTypePlaceAnOrder;
 import com.trust.shengyu.calltaxi.tools.beans.NObodyOrderBean;
 import com.trust.shengyu.calltaxi.tools.beans.RefusedOrderBean;
 import com.trust.shengyu.calltaxi.tools.dialog.TrustDialog;
+import com.trust.shengyu.calltaxi.tools.gps.Maker;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -54,6 +62,11 @@ public class OrderStatusActivity extends BaseActivity {
 
         initLayout();
 
+
+        if(mqttServer == null){
+            bindService(new Intent(OrderStatusActivity.this,TrustServer.class),serviceConnection, Context.BIND_AUTO_CREATE);
+        }
+
         mqttServer.appStatus = true;
         mqttServer.filterOrder();
 
@@ -62,7 +75,7 @@ public class OrderStatusActivity extends BaseActivity {
     }
 
     public void initLayout() {
-
+        setupLocationStyle();
         trustTools = new TrustTools();
         L.d("initLayout");
         rePlaceAnOrder();
@@ -97,6 +110,7 @@ public class OrderStatusActivity extends BaseActivity {
                 break;
             case Config.OrderStatusOrders://异常退出 司机已经接单
                 L.d("司机已经接单");
+                orderNo = getIntent().getStringExtra("orderNo");
                 driverHasReceivedTheOrder();
                 break;
             case Config.OrderStatusStartOrders://异常退出 司机开始订单
@@ -136,22 +150,22 @@ public class OrderStatusActivity extends BaseActivity {
                     trustDialog.showNoOneForALongTime(OrderStatusActivity.this).setNoOneForALongTimeListener(new TrustDialog.NoOneForALongTimeListener() {
                         @Override
                         public void CallBack(View view) {
-                            trustDialog.showExceptionDescription(OrderStatusActivity.this).setOnClickListener(
-                                    new TrustDialog.onDialogClickListener() {
-                                        @Override
-                                        public void resultMessager(String msg) {
-                                            if (msg != null) {
+//                            trustDialog.showExceptionDescription(OrderStatusActivity.this).setOnClickListener(
+//                                    new TrustDialog.onDialogClickListener() {
+//                                        @Override
+//                                        public void resultMessager(String msg) {
+//                                            if (msg != null) {
                                                 Map<String, Object> cancelMap = new WeakHashMap<>();
                                                 cancelMap.put("orderNo", orderNo);
                                                 cancelMap.put("status", Config.User);
-                                                cancelMap.put("remark", msg);
+                                                cancelMap.put("remark", "无人接单!");
                                                 requestCallBeack(Config.CANCEL_ORDER, cancelMap, Config.TAG_CANCEL_ORDER, trustRequest.PUT, Config.token);
-                                            } else {
-                                                L.e("拒绝订单原因为null");
-                                            }
-                                        }
-                                    }
-                            );
+//                                            } else {
+//                                                L.e("拒绝订单原因为null");
+//                                            }
+//                                        }
+//                                    }
+//                            );
                         }
                     });
                 }
@@ -215,6 +229,7 @@ public class OrderStatusActivity extends BaseActivity {
      * 开始订单
      */
     private void startOrder() {
+        aMap.setMyLocationEnabled(true);
         mapOrderCancel.setVisibility(View.INVISIBLE);
         showSnackbar(mapOrderCancel, "已经上车!", null);
     }
@@ -228,7 +243,7 @@ public class OrderStatusActivity extends BaseActivity {
      * 结束订单
      */
     private void endOrder() {
-
+        aMap.setMyLocationEnabled(false);
         orderStatusDriverMsgLayout.setVisibility(View.VISIBLE);
         orderStatusEnd.setVisibility(View.VISIBLE);
         showSnackbar(mapOrderCancel, "已经下车", null);
@@ -239,6 +254,12 @@ public class OrderStatusActivity extends BaseActivity {
         L.e("司机拒绝接单");
         showSnackbar(mapOrderCancel, "司机拒绝:", null);
         trustDialog.showErrorOrderDialog(this, bean.getContent().getOrder().getRemark());
+        trustDialog.setErrorOrderDialogListener(new TrustDialog.onErrorOrderDialogListener() {
+            @Override
+            public void CallBack() {
+                finish();
+            }
+        });
     }
 
     @Override
@@ -258,8 +279,10 @@ public class OrderStatusActivity extends BaseActivity {
 
     @Override
     public void resultMqttTypeNobodyOrder(NObodyOrderBean bean) {
+        showSnackbar(mapView, "暂时没有匹配到合适司机,请耐心等待或取消定的那", null);
         if (bean.getStatus() == 0) {
             if (!first) {
+
                 L.d("resultMqttTypeNobodyOrder:" + bean.getContent().getOrder());
                 if (!orderStatusBoolean) {
                     reQuest();
@@ -290,6 +313,7 @@ public class OrderStatusActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         mapView.onResume();
+        TrustServer.baseActivity = this;
     }
 
     /**
@@ -341,8 +365,44 @@ public class OrderStatusActivity extends BaseActivity {
      */
     @Override
     protected void onDestroy() {
-
+        aMap.setMyLocationEnabled(false);
         super.onDestroy();
         mapView.onDestroy();
     }
+
+
+
+
+    /**
+     * 设置自定义定位蓝点
+     */
+    private void setupLocationStyle() {
+        // 自定义系统定位蓝点
+        MyLocationStyle myLocationStyle = new MyLocationStyle();
+
+        // 自定义定位蓝点图标
+        myLocationStyle.myLocationIcon(BitmapDescriptorFactory.
+                fromResource(R.mipmap.gps_point));
+        // 自定义精度范围的圆形边框颜色
+        myLocationStyle.strokeColor(Color.TRANSPARENT);
+        //自定义精度范围的圆形边框宽度
+        myLocationStyle.strokeWidth(5);
+        // 设置圆形的填充颜色
+        myLocationStyle.radiusFillColor(Color.TRANSPARENT);
+        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_FOLLOW) ;//连续定位、且将视角移动到地图中心点，定位蓝点跟随设备移动。（1秒1次定位）
+        // 将自定义的 myLocationStyle 对象添加到地图上
+        aMap.setMyLocationStyle(myLocationStyle);
+
+        aMap.setOnMyLocationChangeListener(new AMap.OnMyLocationChangeListener() {
+            @Override
+            public void onMyLocationChange(Location location) {
+//               baseAmap.setMyLocationEnabled(false);停止定位
+        Maker.mobileMarker(aMap, location.getLatitude(), location.getLongitude());
+
+            }
+        });
+
+
+    }
+
 }

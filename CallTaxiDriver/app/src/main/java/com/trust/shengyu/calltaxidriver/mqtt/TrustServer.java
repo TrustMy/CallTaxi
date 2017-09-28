@@ -3,14 +3,17 @@ package com.trust.shengyu.calltaxidriver.mqtt;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.trust.shengyu.calltaxidriver.Config;
+import com.trust.shengyu.calltaxidriver.R;
 import com.trust.shengyu.calltaxidriver.base.BaseActivity;
 import com.trust.shengyu.calltaxidriver.gpswork.CommonMessage;
 import com.trust.shengyu.calltaxidriver.gpswork.GpsHelper;
@@ -49,6 +52,7 @@ public class TrustServer extends Service {
     private Handler gpsHandler;
     private GpsHelper gpsHelper;
     protected static ExecutorService threadPool = Executors.newCachedThreadPool();
+    private MediaPlayer mp;
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -67,11 +71,13 @@ public class TrustServer extends Service {
         if (callTaxiCommHelper == null) {
             callTaxiCommHelper = new CallTaxiCommHelper(context);
             callTaxiCommHelper.setOnMqttCallBackResultListener(onMqttCallBackResultListener);
-
             gson = new Gson();
             handler.sendEmptyMessageDelayed(1,1000 * 10);
-        }
 
+            doClientConnectionMqtt();
+
+        }
+        mp = MediaPlayer.create(context, R.raw.music);
         gpsHelper = new GpsHelper();
         threadPool.execute(gpsHelper);
         try {
@@ -81,7 +87,7 @@ public class TrustServer extends Service {
         }
         gpsHandler = gpsHelper.getHandler();
         gpsHelper.setTrustServer(this);
-
+        startGps();
     }
 
 
@@ -103,7 +109,8 @@ public class TrustServer extends Service {
 //                }
 //            }else{
                 //分类 通知类型
-                if (topic.equals(Config.TestTopics[0])){
+                if (topic.equals(Config.CSubmitTopic)){
+                    mp.start();
                     resultMqttTypr(msg.toString());
                 }else{
                     //其他同志
@@ -262,6 +269,7 @@ public class TrustServer extends Service {
     private String type;
     private Integer qos;
     public void checkType(TypeBean typeBean){
+
         if(!Config.taskQueue.isEmpty()){
             typeBean = (TypeBean) Config.taskQueue.peek();
             Config.taskQueue.remove(typeBean);
@@ -289,6 +297,7 @@ public class TrustServer extends Service {
                 }
                 if(message !=null){
                     sendMqttMsg(type,qos,message);
+                    Toast.makeText(context,"开始发送:"+message,Toast.LENGTH_LONG).show();
 //                    L.i("trustServer sendMsg success");
                 }
             }

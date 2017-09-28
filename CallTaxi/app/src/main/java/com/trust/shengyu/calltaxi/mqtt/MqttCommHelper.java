@@ -63,6 +63,7 @@ public abstract class MqttCommHelper {
     protected int[] qoss = {1,1};
     protected String sendTopic;
     protected Context context;
+    protected String submitTopic;
 
     public MqttCommHelper(Context context) {
         this.context = context;
@@ -187,7 +188,7 @@ public abstract class MqttCommHelper {
             doConnect = false;
                 // 订阅myTopic话题
 //                client.subscribe(myTopic,1);
-                subscribeTopic(submintTopics[0],1);
+                subscribeTopic(submitTopic,1);
             mqttConnectionStatus(Config.MQTT_TYPE_CONNECTION_SUCCESS);
 
             L.d(" mqtt connection success conOpt.isAutomaticReconnect():"+conOpt.isAutomaticReconnect());

@@ -45,6 +45,7 @@
             />
 
         <EditText
+            android:maxLength="11"
             android:inputType="number"
             android:id="@+id/login_user"
             android:textColor="@color/colorAccent"

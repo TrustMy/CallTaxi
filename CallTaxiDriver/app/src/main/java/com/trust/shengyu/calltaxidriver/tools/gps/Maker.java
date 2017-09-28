@@ -8,7 +8,6 @@ import com.amap.api.maps.model.CameraPosition;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.MarkerOptions;
 
-
 import java.util.ArrayList;
 
 /**
@@ -17,7 +16,7 @@ import java.util.ArrayList;
 
 public class Maker {
 
-    public static void showMaker (AMap map, LatLng data ,String title,String msg){
+    public static void showMaker (AMap map, LatLng data , String title, String msg){
         map.addMarker(new MarkerOptions().
                 position(data).
                 title(title).snippet(msg)).showInfoWindow();
@@ -35,6 +34,20 @@ public class Maker {
                 position(data));
         map.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(
                 new LatLng(data.latitude,data.longitude),//新的中心点坐标
+                500, //新的缩放级别
+                0, //俯仰角0°~45°（垂直与地图时为0）
+                0  ////偏航角 0~360° (正北方为0)
+        )));
+    }
+
+    /**
+     * 移动视角中心
+     * @param map
+     *
+     */
+    public  static void mobileMarker(AMap map, double lat, double lon){
+        map.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(
+                new LatLng(lat,lon),//新的中心点坐标
                 500, //新的缩放级别
                 0, //俯仰角0°~45°（垂直与地图时为0）
                 0  ////偏航角 0~360° (正北方为0)

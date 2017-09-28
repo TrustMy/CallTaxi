@@ -13,8 +13,10 @@ import android.widget.TextView;
 
 import com.trust.shengyu.calltaxidriver.Config;
 import com.trust.shengyu.calltaxidriver.R;
+import com.trust.shengyu.calltaxidriver.activitys.AndroidPermissionTool;
 import com.trust.shengyu.calltaxidriver.activitys.MainActivity;
 import com.trust.shengyu.calltaxidriver.base.BaseActivity;
+import com.trust.shengyu.calltaxidriver.tools.L;
 import com.trust.shengyu.calltaxidriver.tools.beans.DriverInformation;
 
 import java.util.Map;
@@ -55,7 +57,8 @@ public class LoginActivity extends BaseActivity {
 
 //        trustDialog.showWaitDialog(this);
 
-
+        AndroidPermissionTool tool = new AndroidPermissionTool();
+        tool.checkPermission(this);
     }
 
 
@@ -79,6 +82,7 @@ public class LoginActivity extends BaseActivity {
             case R.id.login_submit:
                 String user = baseCheckIsNull(loginUser, "账号错误!");
                 if (user != null) {
+                    Config.driverPhone = user;
                     String pwd = baseCheckIsNull(loginPwd, "密码错误!");
                     if (pwd != null) {
 //                showSnackbar(loginSubmit,"说明",null);
@@ -119,6 +123,9 @@ public class LoginActivity extends BaseActivity {
                 DriverInformation bean = gson.fromJson(msg,DriverInformation.class);
                 if(getResultStatus(bean.getStatus(),msg)){
                     Config.driver = bean.getContent().getDriverId();
+                    L.d(" Config.driver:"+ Config.driver);
+                    initServer();
+
                     startActivity(new Intent(LoginActivity.this,MainActivity.class));
                 }
                 break;

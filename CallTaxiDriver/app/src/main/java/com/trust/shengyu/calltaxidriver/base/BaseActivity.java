@@ -61,7 +61,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected TrustRequest trustRequest;
     public static boolean mqttConnectionStatus = false;
     protected static TrustServer mqttServer;
-    private ServiceConnection serviceConnection = new ServiceConnection() {
+    protected ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             mqttServer = ((TrustServer.TrustBinder)iBinder).getService();
@@ -78,15 +78,20 @@ public abstract class BaseActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Config.activity = this;
         Config.context = this;
+        TrustServer.baseActivity = this;
         init();
         initPush();
 
     }
 
-    private void initPush() {
+    protected void initServer(){
         if(mqttServer == null){
             bindService(new Intent(context,TrustServer.class),serviceConnection, Context.BIND_AUTO_CREATE);
         }
+    }
+
+    private void initPush() {
+
         dbHelper = new DbHelper(context);
         dbManager = new DBManager(context);
         dbManager.selectAllData();

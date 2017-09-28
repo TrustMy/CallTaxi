@@ -48,7 +48,7 @@ public class MainRecyclerAdapter extends BaseRecyclerViewAdapter {
         if(orderBeanList.get(position).isSeeStatus()){
             mainRecycler.orderSubmit.setBackgroundColor(Color.parseColor("#c4c4c4"));
         }
-        switch (orderBeanList.get(position).getOrderStatus()) {
+        switch (orderBeanList.get(position).getContent().getOrder().getStatus()) {
             case Config.ORDER_STATUS_READ://只是读过订单
                 mainRecycler.orderSubmit.setText("已阅览");
                 mainRecycler.orderSubmit.setBackgroundColor(Color.parseColor("#f3ce1d"));

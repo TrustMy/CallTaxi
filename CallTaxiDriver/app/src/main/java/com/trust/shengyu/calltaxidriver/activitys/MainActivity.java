@@ -33,13 +33,10 @@ import com.trust.shengyu.calltaxidriver.tools.TrustTools;
 import com.trust.shengyu.calltaxidriver.tools.beans.Bean;
 import com.trust.shengyu.calltaxidriver.tools.beans.DriverBean;
 import com.trust.shengyu.calltaxidriver.tools.beans.MqttBeans;
-import com.trust.shengyu.calltaxidriver.tools.beans.OrderBean;
 import com.trust.shengyu.calltaxidriver.tools.beans.RefusedOrderBean;
 import com.trust.shengyu.calltaxidriver.tools.beans.SelectOrdersBean;
 import com.trust.shengyu.calltaxidriver.tools.dialog.TrustDialog;
 import com.trust.shengyu.calltaxidriver.tools.interfaces.LocationInterface;
-
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -67,6 +64,8 @@ public class MainActivity extends BaseActivity {
     TextView mainDrawerlayoutUserStatus;
     @BindView(R.id.main_drawerlayout_trip_history_btn)
     LinearLayout mainDrawerlayoutTripHistoryBtn;
+    @BindView(R.id.driver_name)
+    TextView driverName;
     private MainRecyclerAdapter mainRecyclerAdapter;
     private Context context = MainActivity.this;
     @BindView(R.id.main_recycler)
@@ -79,6 +78,7 @@ public class MainActivity extends BaseActivity {
     private int REQUEST_CODE = 1;
     private String orderNo;//订单号
     private int orderStatus;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,16 +87,21 @@ public class MainActivity extends BaseActivity {
 
         initView();
         initData();
-        mqttServer.doClientConnectionMqtt();
-        mqttServer.startGps();
+
+        if (mqttServer == null) {
+            bindService(new Intent(context, TrustServer.class), serviceConnection, Context.BIND_AUTO_CREATE);
+//            mqttServer.doClientConnectionMqtt();
+//            mqttServer.startGps();
+        }
+
+
         TrustServer.appStatus = true;
 
     }
 
 
-
     private void initView() {
-
+        driverName.setText("姓名:"+Config.driverPhone);
         baseSetOnClick(mainDrawerlayoutBlack);
         baseSetOnClick(mainDrawerlayoutTripHistoryBtn);
 
@@ -117,7 +122,7 @@ public class MainActivity extends BaseActivity {
                 bean = (MqttBeans) msg;
                 L.d("你点击了xxx:" + bean.getContent().getOrder().getStartAddress());
                 orderStatus = bean.getContent().getOrder().getStatus();
-                toIntent(orderStatus,bean, ORDER_MESSAGE);
+                toIntent(orderStatus, bean, ORDER_MESSAGE);
             }
         });
         mainRecyclerAdapter.setOnSubimtListener(new MainRecyclerAdapter.onSubimtListener() {
@@ -127,10 +132,10 @@ public class MainActivity extends BaseActivity {
                 L.d("点击了提交订单:" + bean.getContent().getOrder().getStartAddress());
                 Map<String, Object> map = new WeakHashMap<>();
                 orderNo = bean.getContent().getOrder().getOrderNo();
-                map.put("orderNo",orderNo );
+                map.put("orderNo", orderNo);
                 map.put("receiveTime", TrustTools.getSystemTimeData());
-                map.put("driver", Config.driver+"");
-                requestCallBeack(Config.DRIVER_ORDER, map, Config.TAG_DRIVER_ORDER, trustRequest.POST,Config.token);
+                map.put("driver", Config.driver + "");
+                requestCallBeack(Config.DRIVER_ORDER, map, Config.TAG_DRIVER_ORDER, trustRequest.POST, Config.token);
 
             }
         });
@@ -166,12 +171,11 @@ public class MainActivity extends BaseActivity {
         mainRecycler.setAdapter(mainRecyclerAdapter);
 
 
-
-        Map<String,Object> map = new WeakHashMap<>();
-        map.put("driver",Config.driver);
-        map.put("status",Config.Driver);
-        requestCallBeack(Config.SERACH_EXECUTE_ORDER,map,Config.TAG_SERACH_EXECUTE_ORDER,
-                trustRequest.GET,Config.token);
+        Map<String, Object> map = new WeakHashMap<>();
+        map.put("driver", Config.driver);
+        map.put("status", Config.Driver);
+        requestCallBeack(Config.SERACH_EXECUTE_ORDER, map, Config.TAG_SERACH_EXECUTE_ORDER,
+                trustRequest.GET, Config.token);
     }
 
     private void initData() {
@@ -190,7 +194,7 @@ public class MainActivity extends BaseActivity {
                 mainMapDrawerlayout.closeDrawer(GravityCompat.START);
                 break;
             case R.id.main_drawerlayout_trip_history_btn:
-                startActivity(new Intent(context, OrderHistoryActivity.class));
+//                startActivity(new Intent(context, OrderHistoryActivity.class));
                 break;
         }
     }
@@ -223,18 +227,18 @@ public class MainActivity extends BaseActivity {
     }
 
     //跳转 orderStatus页面
-    public void toIntent(int orderstatus,Bean bean, boolean type) {
+    public void toIntent(int orderstatus, Bean bean, boolean type) {
         Intent intent = new Intent(MainActivity.this, OrderStatusActivity.class);
         intent.putExtra("type", type);
         intent.putExtra("orderStatus", orderstatus);
         intent.putExtra("order", bean);
-        startActivityForResult(intent,REQUEST_CODE);
+        startActivityForResult(intent, REQUEST_CODE);
     }
 
 
     @Override
     public void resultMqttTypePlaceAnOrder(MqttBeans bean) {
-
+        L.d("来看订单的状态:" + bean.getOrderStatus());
         L.d("来订单了:" + bean.getContent().getOrder().getStartAddress() + "|" + bean.getContent().getOrder().getEndAddress() + "|" +
                 bean.getContent().getOrder().getEstimatesAmount());
         ml.add(bean);
@@ -251,10 +255,11 @@ public class MainActivity extends BaseActivity {
                 DriverBean driverBean = gson.fromJson(msg, DriverBean.class);
                 if (getResultStatus(driverBean.getStatus(), msg)) {
                     orderStatus = bean.getContent().getOrder().getStatus();
-                    toIntent(orderStatus,bean, ORDER_SUMBIT);
-                }else{
+                    toIntent(orderStatus, bean, ORDER_SUMBIT);
+                } else {
                     for (int i = 0; i < ml.size(); i++) {
-                        if(orderNo .equals(ml.get(i).getContent().getOrder().getOrderNo())){
+                        if (orderNo.equals(ml.get(i).getContent().getOrder().getOrderNo())) {
+
                             ml.get(i).setSeeStatus(true);
                             ml.get(i).setOrderStatus(Config.ORDER_STATUS_END);
                         }
@@ -266,16 +271,16 @@ public class MainActivity extends BaseActivity {
 
             case Config.TAG_SERACH_EXECUTE_ORDER:
                 String orderMsg = null;
-                SelectOrdersBean selectOrdersBean = gson.fromJson(msg,SelectOrdersBean.class);
-                if(getResultStatus(selectOrdersBean.getStatus(),msg)){
-                  if(selectOrdersBean.getContent() != null){
-                      orderStatus = selectOrdersBean.getContent().getStatus();
-                      toIntent(orderStatus,selectOrdersBean, ORDER_SUMBIT);
-                  }else{
-                      L.e("没有正在进行的订单");
-                  }
+                SelectOrdersBean selectOrdersBean = gson.fromJson(msg, SelectOrdersBean.class);
+                if (getResultStatus(selectOrdersBean.getStatus(), msg)) {
+                    if (selectOrdersBean.getContent() != null) {
+                        orderStatus = selectOrdersBean.getContent().getStatus();
+                        toIntent(orderStatus, selectOrdersBean, ORDER_SUMBIT);
+                    } else {
+                        L.e("没有正在进行的订单");
+                    }
                 }
-                L.d("订单状态:"+orderMsg);
+                L.d("订单状态:" + orderMsg);
                 break;
         }
     }
@@ -287,16 +292,16 @@ public class MainActivity extends BaseActivity {
     }
 
 
-    public static double myLat = 31.232185,myLon = 121.413141;
+    public static double myLat = 0, myLon = 0;
 
     public static LocationInterface locationInterface = new LocationInterface() {
         @Override
         public void getLocation(Location location) {
-            if (location != null){
-                myLat = TrustTools.round(location.getLatitude(),6);
-                myLon = TrustTools.round(location.getLongitude(),6);
+            if (location != null) {
+                myLat = TrustTools.round(location.getLatitude(), 6);
+                myLon = TrustTools.round(location.getLongitude(), 6);
             }
-            L.d("myLat:"+myLat+"|myLon:"+myLon);
+            L.d("myLat:" + myLat + "|myLon:" + myLon);
         }
     };
 
@@ -307,19 +312,19 @@ public class MainActivity extends BaseActivity {
 
             if (data != null) {
                 String ordersOn = data.getStringExtra("orderOn");
-                int statusType = data.getIntExtra("orderStatus",-1);
+                int statusType = data.getIntExtra("orderStatus", -1);
                 if (statusType == -1) {
-                L.e("statusType = -1");
+                    L.e("statusType = -1");
                 }
                 for (int i = 0; i < ml.size(); i++) {
-                    if(ordersOn .equals(ml.get(i).getContent().getOrder().getOrderNo())){
+                    if (ordersOn.equals(ml.get(i).getContent().getOrder().getOrderNo())) {
                         ml.get(i).setSeeStatus(true);
                         ml.get(i).setOrderStatus(statusType);
                     }
                 }
                 mainRecyclerAdapter.setMl(ml);
                 mainRecyclerAdapter.notifyDataSetChanged();
-            }else{
+            } else {
                 L.e("ordersOn = null");
             }
         }

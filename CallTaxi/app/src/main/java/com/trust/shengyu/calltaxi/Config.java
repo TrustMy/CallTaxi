@@ -20,13 +20,17 @@ public class Config {
 
     //----------------------测试参数------------------------------------
     //tcp://192.168.1.160:9001 本地测试   //阿里云  tcp://139.196.229.233:9001
-    public final static String TestMqttServer = "tcp://192.168.1.111:9001";
-    public final static String TestUserName = "mqtt_sy_dataserver";
+    //外网访问 tcp://58.246.120.86:9001
+    public final static String TestMqttServer = "tcp://58.246.120.86:9001";
+    public final static String TestUserName = "ls_user";
     public final static String TestPassWord = "mqtt_test";
-    public final static String TestClientId = "mqtt_sy_dataserver";
+    public  static String TestClientId = Config.userId+"";
     public  static String [] TestTopics = {"book/order/"+"5001"};//订阅后面是他的Customer
     public final static String sendTopic = "Placeanorder";
     public static String userPhone;
+    public static String CSubmintTopic;
+
+    public  static  int  userId;
     //-----------------------Mqtt消息tag--------------------------------
 
     public final static int MQTT_TYPE_PLACE_AN_ORDER = 0x004;//下订单
@@ -36,11 +40,13 @@ public class Config {
     public final static int MQTT_TYPE_REFUSED_ORDER = 0x002;//取消订单
     public final static int MQTT_TYPE_CONNECTION_EXCEPTION = 0x005;//连接断开
     public final static int MQTT_TYPE_CONNECTION_SUCCESS = 0x006;//连接成功
+    public final static int MQTT_TYPE_ORDER_ERROR_NO_DRIVES = 0x007;//没有司机接单
 
 
     //------------------------服务器接口--------------------------------
     //映射 http://192.168.1.111:8082/SYCloudPlatform-1.0   //本地  http://192.168.1.134:8082
-    public static String SERVER_URL = "http://192.168.1.111:8082/SYCloudPlatform-1.0";//服务器地址
+    //外网  //58.246.120.86:8081/tomcat
+    public static String SERVER_URL = "http://58.246.120.86:8081/tomcat";//服务器地址
     public static String PLACE_AN_ORDER = "/rest/book";//下订单
     public static String CANCEL_ORDER = "/rest/cancel";//取消订单
     public static String SERACH_EXECUTE_ORDER = "/rest/executing";//查询正在执行订单

@@ -37,7 +37,7 @@ public class SelectEndActivity extends BaseActivity {
     EditText selectEndCity;
     private int RESULT_CODE = 2;
 
-    private String city = "北京";
+    private String city = "上海";
     private List<Tip> ml = new ArrayList<>();
 
     @Override

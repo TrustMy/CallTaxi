@@ -2,13 +2,18 @@ package com.trust.shengyu.calltaxidriver.activitys.orderstatus;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.amap.api.maps.AMap;
 import com.amap.api.maps.MapView;
+import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.MyLocationStyle;
 import com.trust.shengyu.calltaxidriver.Config;
 import com.trust.shengyu.calltaxidriver.R;
 import com.trust.shengyu.calltaxidriver.activitys.MainActivity;
@@ -24,6 +29,7 @@ import com.trust.shengyu.calltaxidriver.tools.beans.OrderBean;
 import com.trust.shengyu.calltaxidriver.tools.beans.RefusedOrderBean;
 import com.trust.shengyu.calltaxidriver.tools.beans.SelectOrdersBean;
 import com.trust.shengyu.calltaxidriver.tools.dialog.TrustDialog;
+import com.trust.shengyu.calltaxidriver.tools.gps.Maker;
 
 import org.json.JSONObject;
 
@@ -60,6 +66,7 @@ public class OrderStatusActivity extends BaseActivity {
     private String CancelMsg;
     private int RESULT_CODE = 2;
     private int orderStatus;//
+    private AMap aMap;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,13 +75,21 @@ public class OrderStatusActivity extends BaseActivity {
         mapView = (MapView) bindView(this,R.id.order_status_base_map_layout,R.id.base_map);
         mapView.onCreate(savedInstanceState);// 此方法必须重写
         init();
+        initMap();
         initView();
-
+        TrustServer.baseActivity = this;
 //        Map<String,Object> map = new WeakHashMap<>();
 //        map.put("driver",Config.driver);
 //        map.put("status",Config.Driver);
 //        requestCallBeack(Config.SERACH_EXECUTE_ORDER,map,Config.TAG_SERACH_EXECUTE_ORDER,
 //                trustRequest.GET,Config.token);
+    }
+
+
+    private void initMap() {
+        if (aMap == null) {
+            aMap = mapView.getMap();
+        }
     }
 
 
@@ -150,6 +165,7 @@ public class OrderStatusActivity extends BaseActivity {
 
 
     private void initView() {
+        setupLocationStyle();
         baseSetOnClick(orderStatusOrderDetermine);
         baseSetOnClick(orderStatusOrderStart);
         baseSetOnClick(orderStatusOrderEnd);
@@ -278,7 +294,7 @@ public class OrderStatusActivity extends BaseActivity {
      */
     @Override
     protected void onDestroy() {
-
+        aMap.setMyLocationEnabled(false);//停止定位
         super.onDestroy();
         mapView.onDestroy();
     }
@@ -332,4 +348,40 @@ public class OrderStatusActivity extends BaseActivity {
             }
         });
     }
+
+
+
+
+    /**
+     * 设置自定义定位蓝点
+     */
+    private void setupLocationStyle() {
+        // 自定义系统定位蓝点
+        MyLocationStyle myLocationStyle = new MyLocationStyle();
+
+        // 自定义定位蓝点图标
+        myLocationStyle.myLocationIcon(BitmapDescriptorFactory.
+                fromResource(R.mipmap.gps_point));
+        // 自定义精度范围的圆形边框颜色
+        myLocationStyle.strokeColor(Color.TRANSPARENT);
+        //自定义精度范围的圆形边框宽度
+        myLocationStyle.strokeWidth(5);
+        // 设置圆形的填充颜色
+        myLocationStyle.radiusFillColor(Color.TRANSPARENT);
+        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_FOLLOW) ;//连续定位、且将视角移动到地图中心点，定位蓝点跟随设备移动。（1秒1次定位）
+        // 将自定义的 myLocationStyle 对象添加到地图上
+        aMap.setMyLocationStyle(myLocationStyle);
+
+        aMap.setOnMyLocationChangeListener(new AMap.OnMyLocationChangeListener() {
+            @Override
+            public void onMyLocationChange(Location location) {
+//               baseAmap.setMyLocationEnabled(false);停止定位
+                Maker.mobileMarker(aMap, location.getLatitude(), location.getLongitude());
+
+            }
+        });
+        aMap.setMyLocationEnabled(true);
+
+    }
+
 }
